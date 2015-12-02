@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+<componentDeployment language="f90" name="integrators.MonteCarlo" palletClassAlias="integrators.MonteCarlo" uniqueID="elwasif@bluenile.ornl.gov:integrators.MonteCarlo:2007-12-07|16:53:18.131343">
+   <environment>
+      <library libtool-archive="libintegrators.MonteCarlo.la" loading="static" location="/home/elwasif/CCA/tutorial/src-sc07/install/lib" name="integrators.MonteCarlo" shared-archive="libintegrators.MonteCarlo.so" static-archive="libintegrators.MonteCarlo.a"/>
+      <headers files="integrators_MonteCarlo.mod integrators_MonteCarlo_type.mod" path="/home/elwasif/CCA/tutorial/src-sc07/install/include"/>
+      <clientList>
+         <client>
+		<headerpath>/home/elwasif/CCA/tutorial/src-sc07/install/include</headerpath>
+		<language>c</language>
+                <libpath>/home/elwasif/CCA/tutorial/src-sc07/install/lib</libpath>
+		<library>"libintegrators.MonteCarlo-c.a"</library>
+         <client headerpath="/home/elwasif/CCA/tutorial/src-sc07/install/include" language="cxx" libpath="/home/elwasif/CCA/tutorial/src-sc07/install/lib" library="libintegrators.MonteCarlo-cxx.a"/>
+         <client headerpath="/home/elwasif/CCA/tutorial/src-sc07/install/include" language="f90" libpath="/home/elwasif/CCA/tutorial/src-sc07/install/lib" library="libintegrators.MonteCarlo-f90.a"/>
+         <client language="f77" libpath="/home/elwasif/CCA/tutorial/src-sc07/install/lib" library="libintegrators.MonteCarlo-f77.a"/>
+      </clientList>
+      <usePortLibList>
+         <usePortLib library="libfunction.FunctionPort-f90.a" path="/home/elwasif/CCA/tutorial/src-sc07/install/lib"/>
+      </usePortLibList>
+      <providePortLibList>
+         <providePortLib library="libintegrator.IntegratorPort-f90.a" path="/home/elwasif/CCA/tutorial/src-sc07/install/lib"/>
+      </providePortLibList>
+      <dependLibList/>
+   </environment>
+   <scl>
+      <library resolution="now" scope="global" uri="/home/elwasif/CCA/tutorial/src-sc07/install/lib/libintegrators.MonteCarlo.la"/>
+      <class desc="ior/impl" name="integrators.MonteCarlo"/>
+   </scl>
+</componentDeployment>
+

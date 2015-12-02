@@ -1,0 +1,253 @@
+#!/bin/sh +x
+
+# usage: $0 language
+#
+# this script tests from nothing the sequence of operations to make an application.
+# Eventually it should work for all languages.
+# the following variables can be replaced with specific paths if not in your default path.
+# Setting pythonpath should not be required.
+echo `which python`
+
+# These next bits should eventually come from configure as part of
+# a cca-spec-babel installation. hasn't happened yet.
+BOCCA=bocca
+BOCCA=/tmp/btt4.8/bin/bocca
+
+GENXML=genccaxml
+GENXML=$HOME/cca/install/csb-108tp/bin/genccaxml
+
+APPGEN=cca-appgen
+APPGEN=true
+APPGEN=/home/baallan/cca/build/cca-spec-babel/utils/ccagm/appgen.py
+APPGEN=/home/baallan/cca/build/cca-tools-contractor/def25/install/bin/gen-cca-main
+
+CCAFESIDL=/home/baallan/cca/install/babel-1.0.8/share/ccafe-0.8.4/ccafe.sidl
+
+if test "$HOST" = "suse102-laptop"; then
+INST=/home/baallan/cca/build/current/install/bin
+BOCCA=$INST/bocca
+GENXML=$INST/genccaxml
+APPGEN=/home/baallan/cca/build/current/cca-spec-babel/utils/ccagm/appgen.py
+CCAFESIDL=/home/baallan/cca/build/current/install/share/ccafe-0.8.4/ccafe.sidl
+fi
+if test "$USER" = "norris"; then
+INST=/home/norris/cca/build/current/install/bin
+BOCCA=$INST/bocca
+GENXML=$INST/genccaxml
+# in source tree
+APPGEN=/home/norris/cca/build/cca-spec-babel/utils/ccagm/appgen.py
+CCAFESIDL=$INST/../share/ccafe-0.8.4/ccafe.sidl
+fi
+if test "$HOST" = "ccafe.ca.sandia.gov"; then
+VER=def25
+BOCCA=/home/baallan/cca/build/cca-tools-contractor/$VER/install/bin/bocca
+GENXML=/home/baallan/cca/build/cca-tools-contractor/$VER/install/bin/genccaxml
+CCAFESIDL=/home/baallan/cca/build/cca-tools-contractor/$VER/install/share/ccafe-0.8.8/ccafe.sidl
+fi
+
+################################################
+# environment tests
+if test "x$1" = "x"; then
+	echo "$0: output implementation language is required"
+	exit 1
+fi
+LANG=$1
+
+if test "x$LANG" = "xrestart"; then
+LANG=cxx
+# echo $APPGEN $LANG test$LANG/test.inp mpitest.script.babel test$LANG mpitest $CCAFESIDL
+echo $APPGEN -l $LANG test$LANG/test.inp mpitest.script.babel -o test$LANG -p mpitest ;#  $CCAFESIDL
+exit
+fi
+
+outdir=test$LANG
+if ! test -d $outdir; then
+	mkdir $outdir
+fi
+if ! test -d $outdir; then
+	echo "$0: unable to find or create output_subdir"
+	exit 1
+fi
+
+case $LANG in
+cxx|c|f90|f77|java|python)
+	: ok
+	;;
+*) echo "unsupported language $LANG. Try one of cxx c f90 f77 java python"
+	exit 1
+	;;
+esac
+
+$BOCCA --help 2>/dev/null > /dev/null
+x=$?
+if ! test "x$x" = "x0"; then
+	echo "didn't find working bocca with $BOCCA"
+	exit 1
+fi
+
+$GENXML --help 2>/dev/null > /dev/null
+x=$?
+if ! test "x$x" = "x0"; then
+	echo "didn't find working genccaxml with $GENXML"
+	exit 1
+fi
+
+$APPGEN --help 2>/dev/null > /dev/null
+x=$?
+if ! test "x$x" = "x0"; then
+	echo "didn't find working cca-appgen with $APPGEN"
+	exit 1
+fi
+
+################################################
+# generate some test components.
+
+TOP=`pwd`
+echo "TOP=$TOP"
+cd $outdir
+pwd
+rm -rf test
+$BOCCA create project test -lc
+x=$?
+if ! test "x$x" = "x0"; then
+	echo "$BOCCA create project failed."
+	exit 1
+fi
+cd test
+pwd
+./configure --with-bocca=$BOCCA --prefix=$TOP/$outdir/install  --with-languages="c cxx"
+
+x=$?
+if ! test "x$x" = "x0"; then
+	echo "configure failed."
+	exit 1
+fi
+
+cat << EOF > sc.sidl
+package test version 0.0 {
+	interface StringConsumer {
+		void setString(in string s);
+	}
+}
+EOF
+$BOCCA create port StringConsumer --import-sidl=sc.sidl
+x=$?
+if ! test "x$x" = "x0"; then
+	echo "$BOCCA create port failed."
+	exit 1
+fi
+rm sc.sidl
+
+$BOCCA create component Printer \
+	--provides=StringConsumer@writer
+x=$?
+if ! test "x$x" = "x0"; then
+	echo "$BOCCA create component Printer failed."
+	exit 1
+fi
+
+$BOCCA create component Driver \
+	--uses=StringConsumer@writer \
+	--provides=gov.cca.ports.BasicParameterPort@PARAMS \
+	--go=DO_IT
+x=$?
+if ! test "x$x" = "x0"; then
+	echo "$BOCCA create component Driver failed."
+	exit 1
+fi
+
+make
+x=$?
+if ! test "x$x" = "x0"; then
+	echo "component build failed"
+	exit 1
+fi
+
+make install
+x=$?
+if ! test "x$x" = "x0"; then
+	echo "component install failed"
+	exit 1
+fi
+
+# bocca will eventually handle the following, but doesn't yet.
+$GENXML port test.StringConsumer --prefix=$TOP/$outdir/install --project=test --output=test.StringConsumer_depl.xml
+$GENXML component test.Printer -lc --prefix=$TOP/$outdir/install --project=test --output=test.Printer_depl.xml --provides=test.StringConsumer@writer --base-symbols=test.StringConsumer
+$GENXML component test.Driver -lc --prefix=$TOP/$outdir/install --project=test --output=test.Driver_depl.xml --uses=test.StringConsumer@writer
+cp *.xml $TOP/$outdir/install/share/cca/
+# clear out obsolete xml files (not!); tools should just ignore these
+# rm $TOP/$outdir/install/share/cca/*.cca
+
+echo "Completed test setup. Running cca-appgen test"
+
+cd ..
+pwd
+
+cat << EOF > test.inp
+path set $TOP/$outdir/install/share/cca
+#repository list
+repository get-global test.Driver
+repository get-global test.Printer
+create test.Driver driver
+create test.Printer printer
+#config driver PARAMS prefix driver said
+connect driver writer printer writer
+go driver DO_IT
+EOF
+
+cd $TOP
+pwd
+#echo "$APPGEN $LANG test$LANG/test.inp ag$LANG test$LANG mpitest $CCAFESIDL"
+echo $APPGEN -l $LANG test$LANG/test.inp mpitest.script.babel -o test$LANG -p mpitest -b `which bocca`
+# aglang != mpitest.script.babel package name. need to fix(sed) output to match aglang or whatever.
+echo "starting appgen " `date`
+#$APPGEN $LANG test$LANG/test.inp mpitest.script.babel test$LANG mpitest $CCAFESIDL
+$APPGEN -l $LANG test$LANG/test.inp mpitest.script.babel -o test$LANG -p mpitest -b `which bocca`
+x=$?
+if ! test "x$x" = "x0" ; then
+        echo "$APPGEN $LANG test$LANG/test.inp mpitest.script.babel test$LANG mpitest $CCAFESIDL"
+	echo "done appgen " `date`
+	exit 1
+fi
+echo "done appgen " `date`
+
+echo "CHECK for generation errors manually"
+exit 1
+
+if ! test -d test$LANG; then
+	echo "$APPGEN $LANG test.inp ag$LANG test$LANG created nothing."
+	exit 1
+fi
+cd test$LANG/mpitest
+pwd
+./configure --prefix=$TOP/$outdir/install --with-languages="c cxx"
+x=$?
+if ! test "x$x" = "x0" ; then
+	echo "configure failed in test$LANG/mpitest"
+	exit 1
+fi
+
+make
+x=$?
+if ! test "x$x" = "x0" ; then
+	echo "make failed in test$LANG/mpitest"
+	exit 1
+fi
+
+make install
+x=$?
+if ! test "x$x" = "x0" ; then
+	echo "install failed in test$LANG/mpitest"
+	exit 1
+fi
+
+# the name of the executable is uncertain currently
+$TOP/$outdir/install/bin/ag$LANG.exe
+x=$?
+if test "x$x" = "x0" ; then
+	echo "PASS test$LANG"
+else
+	echo "FAIL test$LANG"
+fi
+
+exit 0

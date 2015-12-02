@@ -1,0 +1,34 @@
+#!@SHELL@
+# caution: not done yet. just the starting point 
+export Tcl="@TCLSH@"
+progname="bld2babel-cpp"
+exec_prefix=@exec_prefix@
+progsuffix=@CCASPEC_VER_SUFFIX@
+CXX_HDR_SUFFIX=@CCASPEC_CXX_HEADERSUFFIX@
+export CXX_HDR_SUFFIX
+Simp=./$progname.tcl$progsuffix
+# fixme? next line BABELCCA_INSTALL_ROOT
+SCAN_CCA_XML=@bindir@/cca-spec-babel-scanCCAxml.exe$progsuffix
+export SCAN_CCA_XML
+if [ "x$1" = "x" ] ; then
+	echo "$progname requires an input file argument"
+	exit 1
+fi
+if [ "x$Tcl" =  "x" ] ; then
+	echo 'tclsh not found';
+	echo 'Please rerun configure with \"--with-tclsh=/path/to/your/tclsh\" added'
+	exit 1;
+fi
+
+if [ -f @bindir@/$progname.tcl$progsuffix ] ; then
+	Simp=@bindir@/$progname.tcl$progsuffix;
+fi
+
+if [ "x$Simp" = "x" ] ; then
+	echo "$progname.tcl$progsuffix not found in pwd";
+	exit 1;
+fi
+
+exec $Tcl $Simp -- $*
+exit 0
+

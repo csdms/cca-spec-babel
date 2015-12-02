@@ -1,0 +1,4 @@
+This directory assumes:
+dot is installed (from graphviz)
+doxygen is in the path
+the version is 0.7.5 for cca.sidl.

@@ -1,0 +1,34 @@
+package ccaffeine version 0.3 {
+package ports {
+
+
+/** This interface allows the component to get at its own
+ * framework-managed properties. It's a considerable simplification on
+ * BuilderService.
+ */
+interface ComponentPropertiesService extends gov.cca.Port
+{
+
+   /** @return the framework maintained properties of the
+	component.
+    */
+   gov.cca.TypeMap getProperties();
+
+   /** Merge in the data from tm to the existing properties
+	for the component. Attempts to change protected values
+	are silently ignored.
+    */
+   void mergeProperties(in gov.cca.TypeMap tm);
+
+   /** Cause the key/value pairs for the list of keys given
+	to be removed from among the component properties.
+	Attempts to remove protected or undefined properties are ignored.
+    */ 
+   void removeProperties(in array< string > keys);
+
+   void removeProperty(in string key);
+
+}  // end port ComponentPropertiesService
+
+} // end ports package
+} // end ccaffeine package

@@ -1,0 +1,58 @@
+<?xml version="1.0"?> 
+<!-- [baa] I'm a lot less than clear on what we need in the scl block
+if the different bindings of a port are in different libraries.
+probably an example in the tutorial somewhere; not sure.
+Or is it all required to be lumped in one file, which doesn't make
+sense in the case of java/python/other script langs probably. -->
+<libInfo>
+<scl>
+  <library uri="/home/baallan/work/sc04/install/ccafe10/lib/libStringConsumerPort_0_5_6.la" 
+	scope="global" 
+	resolution="now" > 
+    <class name="ccafe3.StringConsumerPort" desc="ior/impl" />
+  </library>
+</scl>
+<!-- we need the portDeployment info to describe an installation for
+use with build tools. -->
+<portDeployment 
+  name="ccafe3.StringConsumerPort"
+  paletteClassAlias="StringConsumerPort"
+>
+
+    <environment language="ior" > 
+        <ccaSpec binding="babel" /> 
+        <library loading="dynamic" 
+                 name="/home/baallan/work/sc04/install/ccafe10/lib/libStringConsumerPort-ior.la" 
+                 libtool-archive="/home/baallan/work/sc04/install/ccafe10/lib/libStringConsumerPort_0_5_6-ior.la" 
+                 shared-archive="/home/baallan/work/sc04/install/ccafe10/lib/libStringConsumerPort_0_5_6-ior.so" 
+                 static-archive="/home/baallan/work/sc04/install/ccafe10/lib/libStringConsumerPort_0_5_6-ior.a" 
+        />
+	<!-- for the ior lang, i'm not sure we need header location info.
+  		probably do. -->
+	<headers path="/home/baallan/work/sc04/install/ccafe10/include/ccafe-0.5.6" files="dc/babel/component/StringConsumerPort/server/ccafe1.h" />
+    </environment>
+
+    <environment language="c" > 
+        <ccaSpec binding="babel" /> 
+        <library loading="dynamic" 
+                 name="/home/baallan/work/sc04/install/ccafe10/lib/libStringConsumerPort-c.la" 
+                 libtool-archive="/home/baallan/work/sc04/install/ccafe10/lib/libStringConsumerPort_0_5_6-c.la" 
+                 shared-archive="/home/baallan/work/sc04/install/ccafe10/lib/libStringConsumerPort_0_5_6-c.so" 
+                 static-archive="/home/baallan/work/sc04/install/ccafe10/lib/libStringConsumerPort_0_5_6-c.a" 
+        />
+	<headers path="/home/baallan/work/sc04/install/ccafe10/include/ccafe-0.5.6" files="dc/babel/component/StringConsumerPort/server/ccafe1.h" />
+    </environment>
+
+    <environment language="c++"> 
+        <ccaSpec binding="babel" /> 
+        <library loading="dynamic" 
+                 name="/home/baallan/work/sc04/install/ccafe10/lib/libStringConsumerPort_0_5_6-c++.la" 
+                 libtool-archive="/home/baallan/work/sc04/install/ccafe10/lib/libStringConsumerPort_0_5_6-c++.la" 
+                 shared-archive="/home/baallan/work/sc04/install/ccafe10/lib/libStringConsumerPort_0_5_6-c++.so" 
+                 static-archive="/home/baallan/work/sc04/install/ccafe10/lib/libStringConsumerPort_0_5_6-c++.a" 
+        />
+	<headers path="/home/baallan/work/sc04/install/ccafe10/include/ccafe-0.5.6" files="dc/babel/component/StringConsumerPort/server/ccafe1.hh" />
+    </environment>
+
+</portDeployment>
+</libInfo>

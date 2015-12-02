@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<componentDeployment language="f90" name="integrators.MonteCarlo" palletClassAlias="integrators.MonteCarlo" uniqueID="baallan@qc.ca.sandia.gov:integrators.MonteCarlo:2007-12-17|14:00:10.464901">
+   <environment>
+      <library libtool-archive="libintegrators.MonteCarlo.la" loading="dynamic" location="/home/baallan/cca/tutorial/src-sc07/install/lib" name="integrators.MonteCarlo" shared-archive="libintegrators.MonteCarlo.so"/>
+      <headers files="integrators_MonteCarlo.mod integrators_MonteCarlo_type.mod" path="/home/baallan/cca/tutorial/src-sc07/install/include"/>
+      <clientList/>
+      <usePortLibList/>
+      <providePortLibList/>
+      <dependLibList/>
+   </environment>
+   <scl>
+      <library resolution="now" scope="global" uri="/home/baallan/cca/tutorial/src-sc07/install/lib/libintegrators.MonteCarlo.la"/>
+      <class desc="ior/impl" name="integrators.MonteCarlo"/>
+   </scl>
+</componentDeployment>
+

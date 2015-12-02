@@ -1,0 +1,101 @@
+#!/usr/bin/env python
+import os, sys
+import os.path
+import distutils.sysconfig
+
+#from optparse import OptionParser
+
+# FIX BOCCA PATH. We end up doing this in every python script. maintenance hassle.
+#
+genccaxml_self = os.path.realpath(sys.argv[0])
+genccaxml_tools_bin = os.path.dirname(genccaxml_self)
+libdirname = distutils.sysconfig.get_config_var('LIB')
+if libdirname is None: libdirname = 'lib' # for python versions < 2.5
+
+try:
+    genccaxmllibPath = os.path.abspath(os.path.join(genccaxml_tools_bin, '..', libdirname,
+                                    'python' + distutils.sysconfig.get_python_version(),
+                                    'site-packages'))
+    sys.path.append(genccaxmllibPath)
+except:
+    print 'queryccaxml: Cannot locate ccaxml2 module path.'
+    exit(1)
+
+#print >> sys.stderr, "python path is:"
+#print >> sys.stderr, sys.path
+#print >> sys.stderr, sys.argv[0]
+
+# ugly developer trick
+if os.path.exists("CCAXMLQuery.py") and os.path.isfile("CCAXMLQuery.py") and sys.argv[0] == "./queryccaxml":
+    print >> sys.stderr , "Loading local python module"
+    from CCAXMLQuery import CCAXMLQuery
+    from Index import Index
+    from Symbol import Symbol
+else:
+    from ccaxml2.CCAXMLQuery import CCAXMLQuery
+    from ccaxml2.Index import Index
+    from ccaxml2.Symbol import Symbol
+
+usage="""%prog symbol [symbols] [options]
+Query XML deployment files for a SIDL or CCA symbol installation 
+dependency trivia.
+Example:
+  %prog -s installedpkg.somecomponent
+Usage:
+  %prog <sidlname> [options]
+"""
+
+if __name__ == '__main__':
+    q = CCAXMLQuery()
+    parser = q.initParser(usage)
+    (options, args) = parser.parse_args()
+    if len(args) < 1:
+        parser.print_help()
+        sys.exit(1)
+
+    sys.exit(q.process(options,args))
+    
+
+def misc():
+    """
+    if len(symbol) < 3 or not "." in symbol:
+        parser.print_help()
+        print "SIDL symbol requested appears to be incomplete:", symbol
+        sys.exit(1)
+
+    suffix = q.getSuffix(options)
+    path = q.getPath(options)
+
+    y = Index()
+    y.setpath(path)
+    y.scanpath(suffix)
+    # y.printIndex()
+
+    dep = y.findSymbolDependencies("mypkg.DataHolder")
+    print "DEPLIST:"
+    for i in dep:
+        print i
+    print "ENDLIST:"
+
+    sdep= y.findSidlFileDependencies("mypkg.DataHolder")
+    print "SIDLLIST:"
+    for i in sdep:
+        print i
+    print "ENDLIST:"
+
+    idep= y.findIncludeDirs("mypkg.DataHolder","c")
+    print "INCLUDELIST:"
+    for i in idep:
+        print i
+    print "ENDLIST:"
+
+    libdep= y.findLinkFlags("mypkg.DataHolder", "cxx", "libtool")
+    print "LIBLIST:"
+    for i in libdep:
+        print i
+    print "ENDLIST:"
+
+    
+    y.closeAll()
+    sys.exit(0)
+    """

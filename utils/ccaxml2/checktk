@@ -1,0 +1,47 @@
+#!/usr/bin/env python
+
+import sys
+from Index import Index
+#from File import File
+from Symbol import Symbol
+
+def simpleTests():
+    """before this is run, testtk anc checkspec must be run to create inputs"""
+    suffix="_depl.xml"
+    y = Index()
+    #y.debug=True
+    y.setpath("testtk.out:cca_depl.xml")
+    y.scanpath(suffix)
+    # y.printIndex()
+
+    dep = y.findSymbolDependencies("mypkg.DataHolder")
+    print "DEPLIST:"
+    for i in dep:
+        print i
+    print "ENDLIST:"
+
+    sdep= y.findSidlFileDependencies("mypkg.DataHolder")
+    print "SIDLLIST:"
+    for i in sdep:
+        print i
+    print "ENDLIST:"
+
+    idep= y.findIncludeDirs("mypkg.DataHolder","c")
+    print "INCLUDELIST:"
+    for i in idep:
+        print i
+    print "ENDLIST:"
+
+    libdep= y.findLinkFlags("mypkg.DataHolder", "cxx", "libtool")
+    print "LIBLIST:"
+    for i in libdep:
+        print i
+    print "ENDLIST:"
+
+    
+    y.closeAll()
+    sys.exit(0)
+
+if __name__ == '__main__':
+    simpleTests()
+    sys.exit(0)

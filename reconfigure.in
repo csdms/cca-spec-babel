@@ -1,0 +1,2 @@
+#! /bin/sh
+./configure @CCASPEC_CONFIG_ARGS@

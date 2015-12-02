@@ -1,0 +1,117 @@
+#!/usr/bin/env python
+
+import sys
+from Index import Index
+from File import File
+from Symbol import Symbol
+
+def simpleTests():
+    y = Index()
+    y.setpath("ex2")
+    y.scanpath()
+    y.printIndex()
+    y.closeAll()
+
+    # component example
+    # Overall scheme:
+    # - Index has a symbol table spanning all files.
+    # - Each File knows the names of the symbols that come from it and owns its
+    #   associated dom instance. (But does not know the full symtab).
+    # - Each Symbol is a set of data, and methods that can 
+    #   load/change the data and methods that can load/change the dom node.
+    #   Symbol also has convenience methods for defining new symbols.
+    # The proper way of handling a symbol and all its dependencies is
+    # to Index the path for all possible symbols and resolve all intersymbol
+    # dependencies. 
+    # This is all skewed. it should be that index owns the files, files own the
+    # doms and symbols, and index provides utility methods to lookup symbols
+    # without the user first finding their files.
+
+    # bootstrapping a new symbol:
+    # create the new file, create the symbol, attach the symbol to the file
+
+    z = Index()
+    z.debug = True
+    symbol="t.ccomp"
+    symbol2="t.jcomp"
+
+    filename = symbol+"_depl.xml"
+    f=File(filename, "new")
+    z.addFile(filename, f)
+
+    psymbol4="t.type4"
+    pfilename = psymbol4+"_depl.xml"
+    pf=File(pfilename, "new")
+    z.addFile(pfilename,pf)
+
+    ps = Symbol(pfilename, psymbol4)
+    ps.definePort(sidlsource="/tmp/nowhere/t.type4.sidl",
+         prefix="/home/baallan/work/sc04/install/ccafe10",
+         project="myproj",
+         libbasename=psymbol4,
+         clients=["c","cxx","f90","python","java"],
+         shared=True, static=True, libtool=True,
+         requiredSymbols=["t.ptype"]
+    )
+    pf.insertSymbol(psymbol4)
+    pf.domFromSymbol(ps)
+
+
+    # for testing, we'll assume the same ports for both components 
+
+    s=Symbol(filename, symbol)
+    s.defineToolkitComponent(impl="c", 
+         sidlsource="/tmp/nowhere/t.ccomp.sidl",
+         prefix="/home/baallan/work/sc04/install/ccafe10",
+         project="myproj",
+         libbasename=symbol,
+         clients=["c","cxx","f90","python","java"],
+	 shared=True, static=True, libtool=True,
+         usesports=[("name1", "t.type1"), ("name2", "t.type2")], 
+         providesports=[("name3", "t.type1"), ("name4", "t.type4")],
+         delegatesports=[("name5", "t.type1", "t.c1"), ("name6", "t.type6")],
+         requiredSymbols=["t.ptype"],
+         extends=["t.bcomp"],
+         extraShared="-L/home/ben/pvm/lib -lpvm -Wl,-rpath,/home/ben/pvm/lib",
+         extraStatic="/home/ben/pvm/lib/libpvm.a",
+         extraLibtool="/home/ben/pvm/lib/libpvm.la",
+         extraCompiling="-D_STUPID"
+    )
+
+    # add properties on some ports.
+    pprops = dict()
+    pprops["fred"] = ("int", 1)
+    pprops["joe"] = ("string", "text")
+    s2=Symbol(filename, symbol2)
+    s2.defineToolkitComponent(impl="java", 
+         sidlsource="/tmp/nowhere/t.jcomp.sidl",
+         prefix="/home/baallan/work/sc04/install/ccafe10",
+         project="myproj",
+         libbasename=symbol,
+         clients=["c","cxx","f77","f90","python","java"],
+	 shared=True, static=True, libtool=True,
+         usesports=[("name1", "t.type1", pprops), ("name2", "t.type2")], 
+         providesports=[("name3", "t.type1"), ("name4", "t.type4", pprops)],
+         delegatesports=[("name5", "t.type1", "t.c1", pprops), ("name6", "t.type6", None, pprops)],
+         requiredSymbols=["t.ptype"], extends=["t.bcomp"]
+    )
+    f.insertSymbol(symbol)
+    f.insertSymbol(symbol2)
+    f.domFromSymbol(s)
+    f.domFromSymbol(s2)
+
+    z.printIndex()
+    z.closeAll()
+
+    # cycle test. does read/write expand white space?
+    # no. but it is allowed to swap order on unordered lists.
+    g = File(filename)
+    g.write(filename+".v2")
+    h = File(filename+".v2")
+    h.write(filename+".v3")
+    
+    sys.exit(0)
+
+if __name__ == '__main__':
+    simpleTests()
+    sys.exit(0)

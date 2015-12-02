@@ -1,0 +1,29 @@
+<?xml version="1.0"?> 
+<libInfo>
+<!-- # generated component index. -->
+<!-- date=Thu Feb 10 17:44:37 PST 2005 -->
+<!-- builder=baallan@ccafe.ca.sandia.gov -->
+<!-- /home/baallan/work/sc04/install/csb10/bin/genSCLCCA.sh_0_7_5_b_0.10.0  -->
+<scl>
+  <library uri="/home/baallan/work/sc04/install/ccafe10/lib/libStarterComponent_0_5_6.la" 
+	scope="global" 
+	resolution="now" > 
+    <class name="ccafe1.StarterComponent" desc="ior/impl" />
+  </library>
+</scl>
+<componentDeployment 
+  name="ccafe1.StarterComponent"
+  paletteClassAlias="ccafe1.StarterComponent"
+>
+    <environment> 
+        <ccaSpec binding="babel" /> 
+        <library loading="dynamic" 
+                 name="/home/baallan/work/sc04/install/ccafe10/lib/libStarterComponent_0_5_6.la" 
+                 libtool-archive="/home/baallan/work/sc04/install/ccafe10/lib/libStarterComponent_0_5_6.la" 
+                 shared-archive="/home/baallan/work/sc04/install/ccafe10/lib/libStarterComponent_0_5_6.so" 
+                 static-archive="/home/baallan/work/sc04/install/ccafe10/lib/libStarterComponent_0_5_6.a" 
+        />
+	<headers path="/home/baallan/work/sc04/install/ccafe10/include/ccafe-0.5.6" files="dc/babel/component/StarterComponent/server/ccafe1" />
+    </environment>
+</componentDeployment>
+</libInfo>

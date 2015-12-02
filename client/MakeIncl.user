@@ -1,0 +1,10 @@
+# BN note: This file is no longer included in the client builds since
+# no _IOR.c files are produced for the interface-only cca spec 
+# in cca.sidl.
+VPATH = ../ior
+
+ifneq ($(LANGUAGE),ior)
+	INCLUDES = -I$(CCA_SPEC)/client/ior 
+	LIBS = $(CCA_SPEC)/client/ior/libcca$(VER_SUFFIX)-ior.la 
+endif
+

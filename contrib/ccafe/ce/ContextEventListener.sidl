@@ -1,0 +1,21 @@
+package ccaffeine version 0.3 {
+package ce {
+
+/** This is the interface that a component must provide
+    in order to be notified of generic Events. 
+    The more-specific EventListener interfaces in this package
+    are not subtypes of this and component implementers may choose to
+    receive either or both versions of events.
+*/
+interface ContextEventListener 
+{
+
+
+  /** Called on listeners when an event occurs. */
+   void contextActivity(in ContextEvent ed) ; 
+
+}  // end interface ContextEventListener
+
+} // end package ce
+} // end package ccaffeine
+

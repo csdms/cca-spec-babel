@@ -1,0 +1,137 @@
+import ccaffeine.ce;
+
+package ccaffeine version 0.3 {
+package ports {
+/** A message service to alert listeners when peer component
+    activities within CCA purview occur. Used to generate and
+    publish events.
+    This service is to be 
+    immediately available during a setServices call. This service 
+    interface is compatible with a direct-connected or proxy framework.
+*/
+interface ContextEventPublisherService  extends gov.cca.Port
+{
+
+
+  /** The event notice deliver function.
+      @return 0 if ok, -1 if
+              eData alleges to be a standard event type but carries
+              insufficient information to actually be that type.
+   */
+   int fireEvent(in ContextEvent eData) ; 
+
+  /** Create a non-specific event object. This is as close as we get
+      to extensible.
+      @param ceType int value from ContextEventType interface.
+      @param source The componentid of the component firing the event, or
+             null if the generator is the framework itself.
+      @param sourceKey user-defined key per ContextEvent interface.
+      @return an ContextEvent that must then be destroyed by caller
+              when finished.
+   */
+    ContextEvent createContextEvent(in ContextEventType ceType, in gov.cca.ComponentID source, in int sourceKey) ; 
+
+   //// creation of context event instances.
+
+  /** Make factory events. Factories are not themselves responsible for generating
+      these events, though they may if they wish to.
+      @param factoryID the factory component.
+      @param factoryPortProperties the new factory port being announced.
+      @param cet is one of FactoryPortAdded, FactoryPortRemovePending.
+      @param source the component making the announcement.
+      @param sourceKey emitter id within the component making the announcement.
+    */
+   /*CE*/ ComponentFactoryEvent createComponentFactoryEvent(in gov.cca.ComponentID factoryID, in gov.cca.TypeMap factoryPortProperties, in ContextEventType cet, in gov.cca.ComponentID source, in int sourceKey) ;
+
+  /** Make instance request notice.  Note: event type is only: ComponentAddPending.
+      @param componentClassName fully qualified class name of the component type desired.
+             There is no requirement that this name match to a loaded class anywhere.
+      @param componentInstanceName instance name of the component desired.
+             There is no requirement that this name be 'available'.
+      @param source the component making the announcement.
+      @param sourceKey emitter id within the component making the announcement.
+   */
+   /*CE*/ ComponentInstanceAddRequestEvent createComponentInstanceAddRequestEvent(in string componentClassName, in string componentInstanceName, in gov.cca.ComponentID source, in int sourceKey) ;
+
+  /** Make instance added notice.  NOTE- event type is only ComponentAdded.
+      @param componentClassName fully qualified class name of the component created.
+      @param cid the instance added.
+      @param source the component making the announcement.
+      @param sourceKey emitter id within the component making the announcement.
+   */
+   /*CE*/ ComponentInstanceAddedEvent createComponentInstanceAddedEvent(in string componentClassName, in gov.cca.ComponentID cid, in gov.cca.ComponentID source, in int sourceKey) ;
+
+  /** Make instance going away soon notice.
+      Note: event type is only: ComponentDeletePending.
+      @param componentClassName fully qualified class name of the component 
+             to be deleted.
+      @param cid the instance to be deleted.
+      @param source the component making the announcement.
+      @param sourceKey emitter id within the component making the announcement.
+   */
+   /*CE*/ ComponentInstanceDeleteRequestEvent createComponentInstanceDeleteRequestEvent(in string componentClassName, in gov.cca.ComponentID cid, in gov.cca.ComponentID source, in int sourceKey) ;
+
+  /** Make instance gone away notice.  Note: event type is only: ComponentDeleted.
+      @param deadComponentClassName fully qualified class name of the component deleted.
+      @param deadComponentInstanceName the name of the instance deleted.
+      @param source the component making the announcement.
+      @param sourceKey emitter id within the component making the announcement.
+   */
+   /*CE*/ ComponentInstanceDeletedEvent createComponentInstanceDeletedEvent(in string deadComponentClassName, in string deadComponentInstanceName, in gov.cca.ComponentID source, in int sourceKey) ;
+
+  /** Make ConnectionEvent in context notice.
+      @param user the caller component.
+      @param userPortName the caller port.
+      @param userPortProperties the callers view of the port properties,
+             possibly null.
+      @param provider the callee component.
+      @param providerPortName the callee port.
+      @param providerPortProperties the callees view of the port properties,
+             possibly null.
+      @param cet is one of ConnectPending, Connected, DisconnectPending, Disconnected.
+      @param source the component making the announcement.
+      @param sourceKey emitter id within the component making the announcement.
+   */
+   /*CE*/ ContextConnectionEvent createContextConnectionEvent(in gov.cca.ComponentID user, in string userPortName, in gov.cca.TypeMap userPortProperties, in gov.cca.ComponentID provider, in string providerPortName, in gov.cca.TypeMap providerPortProperties, in ContextEventType cet, in gov.cca.ComponentID source, in int sourceKey) ;
+
+  /** Make Port use activity notice for connected port.
+      @param connID the connection on which the activity is occuring.
+      @param cet is one of PortFetchPending, PortFetched, PortReleasePending, PortReleased.
+      @param source the component making the announcement.
+      @param sourceKey emitter id within the component making the announcement.
+   */
+   /*CE*/ PortActivityEvent createPortActivityEvent(in gov.cca.ConnectionID connID, in ContextEventType cet, in gov.cca.ComponentID source, in int sourceKey) ;
+
+  /** Make Port use activity notice where no connection is available.
+      @param portName port being fetched.
+      @param portType kind of port being fetched.
+      @param cet is one of PortFetchPending, PortFetched, PortReleasePending, PortReleased.
+      @param source the component making the announcement. assumed to be user.
+      @param sourceKey emitter id within the component making the announcement.
+   */
+   /*CE*/ PortActivityEvent createPortActivityEvent[Unconnected](in string portName, in string portType, in ContextEventType cet, in gov.cca.ComponentID source, in int sourceKey) ;
+
+   /** Make Port definition event notice.
+      @param component the component where the affected port (will)exist(ed).
+      @param portName port instance name in component scope.
+      @param portType port class name in component scope.
+      @param portProperties the user-supplied properties of the port,
+             which exist a little while before and after the port itself 
+             does (and may be null).
+      @param cet is one of PortAddPending, PortAdded,
+             PortRemovePending, PortRemoved,
+             PortRegisterPending, PortRegistered,
+             PortUnregisterPending, PortUnregistered.
+      @param source the component making the announcement.
+      @param sourceKey emitter id within the component making the announcement.
+   */
+   /*CE*/ PortDefinitionEvent createPortDefinitionEvent(in gov.cca.ComponentID component, in string portName, in string portType, in gov.cca.TypeMap portProperties, in ContextEventType cet, in gov.cca.ComponentID source, in int sourceKey) ;
+
+
+}  // end interface ContextEventPublisherService
+
+} // end package ports 
+} // end package ccaffeine 
+
+
+

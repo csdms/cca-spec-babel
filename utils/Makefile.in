@@ -1,0 +1,35 @@
+
+@SET_MAKE@
+
+PREFIX=@prefix@
+CCASPEC_VER_SUFFIX=@CCASPEC_VER_SUFFIX@
+PROGRAM_SUFFIX= @PROGRAM_SUFFIX@
+BABELCONFIG=@CCASPEC_BABEL_BABEL_CONFIG@
+libbase= cca${CCASPEC_VER_SUFFIX}${PROGRAM_SUFFIX}
+
+PYTHON=@UTIL_PYTHON@
+
+TOP=@fullpathsrcdir@
+SIDLDIR=@pkgdatadir@
+DEPLDIR=@datarootdir@/cca
+
+ifneq "x$(DESTDIR)" "x"
+PYDESTDIR= "--root=$(DESTDIR)"
+endif
+
+all:
+	@if ! test -f ccaxml2/CCAXMLEntity.py; then \
+		cp -r $(TOP)/utils/ccaxml2 $(TOP)/utils/doc . ; \
+		cp -r $(TOP)/utils/ccagm .; \
+	fi
+	$(PYTHON) $(TOP)/utils/setup.py build
+
+install:
+	$(PYTHON) $(TOP)/utils/setup.py install --prefix=$(PREFIX) --force $(PYDESTDIR)
+	@if ! test -d $(DESTDIR)$(DEPLDIR) ; then \
+		mkdir $(DESTDIR)$(DEPLDIR);  \
+	fi
+	$(TOP)/utils/gen-spec-depl $(PYTHON) $(BABELCONFIG) $(PREFIX) $(libbase) $(SIDLDIR) $(DEPLDIR) $(DESTDIR)
+
+clean:
+	$(RM) -r build

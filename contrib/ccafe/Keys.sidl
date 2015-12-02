@@ -1,0 +1,165 @@
+package ccaffeine version 0.3 {
+/**
+ * We would really like to make this a cross-language list of static final
+ * string constants in the package namespace. Babel doesn't support final data
+ * classes, however, so we must define a bunch of static methods to get
+ * the same effect. Rather than keeping track of string spellings,
+ * this lets the user make C macro-looking function calls which return
+ * the exactly needed string if they've used the correct function.
+ * <p>
+    Class defining some keys that will be found in various property maps.
+    These are useful either internally or for a user interface.
+    Obviously, this is just a first stab. Various agents are likely
+    define their own keys. GUI authors are encouraged to get together
+    and define a more complete set, which should perhaps be kept in
+    a separate package instead of as part of CCAFE.
+    Items marked 'Protected' may not be changable after an initial
+    value is set (by the framework).
+    </p>
+
+    <p>
+    The reason we need keys that are UI-implementation independent
+    and storable on component properties is that during long running
+    apps on big machines the gui comes and goes. The user will want
+    the gui to save state. a gui can of course keep it in its own keys,
+    on the component properties, but a better solution in a multi-
+    user/multi-desktop accessing the same big job scenario is to
+    have at least a base set of keys that all gui's understand.
+    </p>
+
+
+    <p>
+    Some keys and types that are protected
+    by the framework for its own use and cannot be set by user.
+    Attempts to reset them inappropriately will be ignored.
+    <ul>
+    <li> Int: CCAFE_FRAMEX, CCAFE_FRAMEY </li>
+    <li> String: CCAFE_CONNTYPE, CCAFE_CONNUSERPORT, CCAFE_CONNPROVIDERPORT,
+        CCAFE_CONNUSER, CCAFE_CONNPROVIDER, CCAFE_CLASS_SHORT_NAME </li>
+    <li> Bool: CCAFE_EXTERNAL_INSTANCE </li>
+    </ul>
+    </p>
+    <p>
+    Some keys and types that are protected
+    by the framework after initial definition from the user.
+    Attempts to reset them inappropriately may be ignored.
+    <ul>
+    <li> Int: CCA_MAXCONNECT, CCA_MINCONNECT </li>
+    <li> String: CCA_PORTNAME, CCA_PORTTYPE, CCAFE_CLASS_NAME </li>
+    <li> Bool: CCA_PROXYABLE </li>
+    </ul>
+    </p>
+
+  */
+class Keys
+{
+
+  //
+  // Keys the average component writer might well use.
+  //
+
+  /** Protected typemap port property (String) instance name. */
+  static string CCA_PORTNAME();
+
+  /** Protected typemap port property (String) class name. */
+  static string CCA_PORTTYPE();
+
+  /** Protected typemap port property (String) proxy friendly. */
+  static string CCA_PROXYABLE() ;
+
+  /** Protected typemap port property (Int) maximum connections on port. */
+  static string CCA_MAXCONNECT() ;
+
+  /** Protected typemap port property (Int) minimum connections on port. */
+  static string CCA_MINCONNECT() ;
+ 
+
+  //
+  // Keys mostly for the internal consumption of the framework
+  // and gui writers but useful for others to read.
+  //
+
+  /** Typemap component instance, port, or connection instance visibility.
+      (Bool). Items tagged false can be omitted from lists
+      rendered to the user unless the user has opted to see hidden items.
+   */
+  static string CCAFE_VISIBLE() ;
+
+  /** Typemap component instance semantics.
+      (Bool). Items tagged true cannot safely have more than one instance
+	globally in a runtime. Thus their rendering may be handled specially
+	by a UI.
+   */
+  static string CCAFE_SINGLETON();
+
+  /** Typemap component class name alias property
+      (String) abbreviated class name for user consumption,
+      which may be strictly political in origin.
+   */
+  static string CCAFE_USER_CLASS_ALIAS() ;
+
+  /** Typemap component class name property
+      (String) unqualified class name. e.g. Vector, not Lib.Vector.
+   */
+  static string CCAFE_CLASS_SHORT_NAME() ;
+
+  /** Typemap component class name property
+      (String) fully qualified class name. e.g. Lib.Vector, not Vector.
+   */
+  static string CCAFE_COMPONENT_INSTANCE_NAME() ;
+
+  /** Typemap component class name property
+      (String) fully qualified class name. e.g. Lib.Vector, not Vector.
+   */
+  static string CCAFE_CLASS_NAME() ;
+
+  /** Typemap component class name property
+      (String) url of image file for class in a user interface.
+   */
+  static string CCAFE_CLASS_IMAGE_FILE() ;
+
+  /** Protected typemap component class name property
+      (String) xbm string of image file for class in a user interface.
+   */
+  static string CCAFE_CLASS_IMAGE() ;
+
+  /** Typemap component instance frame position (integer) X. */
+  static string CCAFE_FRAMEX() ;
+
+  /** Typemap component instance frame position (integer) Y. */
+  static string CCAFE_FRAMEY() ;
+
+
+
+  //
+  // Keys mostly for the internal consumption of the framework
+  // but useful for others to read.
+  //
+
+  /** Protected typemap connectionid property (String)
+      user/provider port class name. */
+  static string CCAFE_CONNTYPE() ;
+
+  /** Protected typemap connectionid property (String) 
+      user port instance name. */
+  static string CCAFE_CONNUSERPORT() ;
+
+  /** Protected typemap connectionid property (String)
+      provider port instance name. */
+  static string CCAFE_CONNPROVIDERPORT() ;
+
+  /** Protected typemap connectionid property (String)
+      user component instance name. */
+  static string CCAFE_CONNUSER() ;
+
+  /** Protected typemap connectionid property (String)
+      provider component instance name. */
+  static string CCAFE_CONNPROVIDER() ;
+
+  /** Protected typemap component instance property 
+      (Bool) inserted via AbstractFramework. */
+  static string CCAFE_EXTERNAL_INSTANCE() ;
+
+} // end class Keys
+
+} // end package ccaffeine

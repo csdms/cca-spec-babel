@@ -1,0 +1,18 @@
+package ccaffeine version 0.3 {
+package ce {
+
+/** This is the interface that a component must implement
+    in order to be notified specifically of PortActivity Events. 
+*/
+interface PortActivityEventListener 
+{
+
+
+  /** Called on listeners when an event occurs. */
+   void doPortActivity(in PortActivityEvent event) ; 
+
+}  // end interface PortActivityEventListener
+
+} // end package ce
+} // end package ccaffeine
+

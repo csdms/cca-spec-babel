@@ -1,0 +1,31 @@
+ComponentData.o: \
+ComponentData.cpp \
+ComponentData.hpp
+
+PortData.o: \
+PortData.cpp \
+PortData.hpp 
+
+MetaDataParser.o: \
+MetaDataParser.cpp \
+treeParser_internal.hpp \
+MetaDataParser.hpp \
+XMLNode.hpp \
+Node.hpp 
+
+Node.o: \
+Node.cpp \
+treeParser_internal.hpp \
+XMLNode.hpp \
+Node.hpp 
+
+Parser.o: \
+Parser.cpp \
+treeParser_internal.hpp \
+XMLNode.hpp \
+Node.hpp \
+MetaDataParser.hpp \
+Parser.hpp 
+
+
+# IF YOU PUT ANYTHING HERE IT WILL GO AWAY

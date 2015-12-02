@@ -1,0 +1,82 @@
+#!@SHELL@
+
+#
+# cca-spec-babel-config
+# a script to query about variables used in cca-spec-babel 
+# compile and install.
+# By Ben Allan (baallan@ca.sandia.gov) 3/26/2003
+#
+# cca-spec-babel-config  [--dump] [--varlist] [--var NAME] [--version]
+#  --dump : produce the complete sh-compatible var assignments.
+#  --varlist: produce the list of variable names.
+#  --var NAME: produce the value of the NAMEd variable, if defined.
+#  --version: tell about this script.
+
+
+Usage=" $0 [--dump] [--varlist] [--var NAME] [--version]"
+#
+# construct the location of the input vars
+# based on data from configure
+#
+CCASPEC_VERSION=@CCASPEC_VERSION@
+babelver=@CCASPEC_BABEL_VERSION@
+suffix="-${CCASPEC_VERSION}"
+babelsuffix="-babel-${babelver}"
+installsuffix="-${CCASPEC_VERSION}-babel-${babelver}"
+prefix=@prefix@
+varfile=CCA_Babel_Vars.sh
+datarootdir=@datarootdir@
+datadir=@datadir@
+insdir=@pkgdatadir@
+insfile=$insdir/$varfile
+configversion=0.1.0
+
+if test -z "$1" ; then
+  echo $Usage
+  exit 0
+fi
+if test "$1" = "--help"; then
+  echo $Usage
+  exit 0
+fi
+if test "$1" = "-h"; then
+  echo $Usage
+  exit 0
+fi
+if test "$1" = "--dump"; then
+  cat $insfile |grep -v '^#'
+  exit 0
+fi
+if test "$1" = "--varlist"; then
+  cat $insfile |grep -v '^#' | sed -e 's;=.*;;'
+  exit 0
+fi
+if test "$1" = "--version"; then
+  echo "$configversion"
+  exit 0
+fi
+
+#
+# delete the var requested if inherited from the
+# callers environment.
+#
+if test "$1" = "--var"; then
+ 	unset $2
+fi
+
+#
+# read our config vars
+#
+. $insfile
+
+#
+# tell something about them
+#
+if test "$1" = "--var"; then
+  s="\${$2:?Not_A_CCA_Spec_Config_Variable}"
+  s2=`echo $s`
+  config_tmp_val=`eval echo $s2`
+  echo $config_tmp_val
+fi
+
+exit 0

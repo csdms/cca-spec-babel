@@ -1,0 +1,10 @@
+CCA_Babel_Vars.sh
+bld2babel-cpp
+ctor
+genSCLCCA.sh
+MakeIncl_CCA_Babel_Vars
+cca-spec-babel-config-*
+test-babel-config-*
+cca-spec-babel-config
+test-babel-config
+

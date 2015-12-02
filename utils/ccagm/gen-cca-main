@@ -1,0 +1,94 @@
+#!/usr/bin/env python
+import os, sys
+import os.path
+import distutils.sysconfig
+import ccagm.which
+
+from optparse import OptionParser
+
+# FIX BOCCA PATH. We end up doing this in every python script. maintenance hassle.
+#
+gen_cca_main_self = os.path.realpath(sys.argv[0])
+gen_cca_main_tools_bin = os.path.dirname(gen_cca_main_self)
+libdirname = distutils.sysconfig.get_config_var('LIB')
+if libdirname is None: libdirname = 'lib' # for python versions < 2.5
+
+try:
+    gen_cca_mainlibPath = os.path.abspath(os.path.join(gen_cca_main_tools_bin, '..', libdirname,
+                                    'python' + distutils.sysconfig.get_python_version(),
+                                    'site-packages'))
+    sys.path.append(gen_cca_mainlibPath)
+except:
+    print 'gen-cca-main: Cannot locate ccagm module path.'
+    exit(1)
+
+print >> sys.stderr, "python path is:"
+print >> sys.stderr, sys.path
+
+from ccagm import appgen
+from boccalib import acboccavars
+# bug: acboccavars ccaffeine overrides the ccaffeine configured in with
+# bocca specified by -b or divergent PATH if it differs from PYTHONPATH.
+
+usage=appgen.appGen.__doc__
+
+if __name__ == '__main__':
+    parser = OptionParser(usage=usage)
+    parser.add_option("-l", "--language", dest="lang",
+                  help="generate sidl/babel implementation in LANG", metavar="LANG", default="cxx" )
+    parser.add_option("-p", "--project", dest="projname", default="Main_+",
+                  help="name of generated project specified to bocca.")
+    parser.add_option("-o", "--output-dir", dest="outdir", default=".",
+                  help="name of directory where bocca project will be created.")
+    parser.add_option("-b", "--with-bocca", dest="boccaprog", default="PATH",
+                  help="full path to bocca program.")
+    (options, args) = parser.parse_args()
+    if len(args) < 2:
+        parser.print_help()
+        sys.exit(1)
+
+    inputFile = os.path.realpath(args[0])
+    
+    if not os.path.isfile(inputFile):
+        print "Error: first argument must be a ccaffeine batch or gui script for translation."
+        sys.exit(1)
+
+    sidlPkg = args[1]
+    if len(sidlPkg) < 1:
+        print "Error: second argument must be a name for a new sidl package or an old one without an already generated main."
+        sys.exit(1)
+
+    lang=options.lang
+
+    projname = options.projname
+    if projname == "Main_+":
+        projname = "Main_"+sidlPkg
+    outdir = os.path.realpath(options.outdir)
+
+    bocca = options.boccaprog
+    if bocca == "PATH":
+        testpath=os.environ['PATH'] 
+        if os.environ.has_key('CCA_TOOLS_DIR'):
+            testpath += os.pathsep + os.environ['CCA_TOOLS_DIR'] +os.dirsep+'bin'
+        if len(gen_cca_main_tools_bin) >0:
+            testpath += os.pathsep+gen_cca_main_tools_bin
+        print "TESTPATH", testpath
+        try:
+            bocca=ccagm.which.which("bocca",testpath.split(os.pathsep)).strip()
+            # which bug: if user supplies path, which forgets to split it.
+        except:
+            raise Exception, "bocca not found in "+testpath
+
+    ccafeconfig=acboccavars.acbocca['CCAFE_CONFIG']
+    x=os.popen(ccafeconfig + " --var CCAFE_pkgdatadir")
+    dat = x.read()
+    err = x.close()
+    ccafesidl = os.path.join(dat.strip(), "ccafe.sidl")
+    if not os.path.isfile(ccafesidl):
+        print "trying", ccafesidl
+        raise Exception, "Unable to locate ccafe.sidl. Tried:  " +ccafeconfig+" --var CCAFE_pkgdatadir + /ccafe.sidl ("+dat+")"
+      
+
+    appgen.appGenCore(lang, inputFile, sidlPkg, outdir, projname, ccafesidl, bocca)
+
+    sys.exit(0)

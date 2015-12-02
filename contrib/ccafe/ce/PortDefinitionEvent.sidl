@@ -1,0 +1,81 @@
+package ccaffeine version 0.3 {
+package ce {
+
+/** 
+   This interface lets components be notified about ports
+   coming and going on other components.
+   Special notes:
+   PortAddPending events do not guarantee that a PortAdded
+   event will follow. The port addition may fail if there
+   is a port naming conflict yet to be discovered.
+*/
+interface PortDefinitionEvent  extends ContextEvent
+{
+
+
+  /** Returns the integer standard type for the event. If the
+      event is not one of the standard types, then this returns
+      ContextEventType.NONE. 
+      For PortDefinitionEvent, the type is one of subset
+      PortAddPending,
+      PortAdded,
+      PortRemovePending,
+      PortRemoved,
+      PortRegisterPending,
+      PortRegistered,
+      PortUnregisterPending,
+      PortUnregistered.
+
+   */
+   ContextEventType getContextEventType() ; 
+
+  /** 
+    Fetch the component generating the event.
+    @returns the componentID of the component generating the event,
+     or null if the container itself generated the event.
+   */
+   gov.cca.ComponentID getContextEventSourceID() ; 
+
+  /** Within a source component, there may be more than one emitter. Key
+      is the self-proclaimed serial number of the emitter, unique
+      within the scope of the result from getSourceID.
+   */
+   int getContextEventSourceKey() ; 
+
+  /** For each source:key pair events are emitted in a monotonically
+      increasing sequence. It is hoped 64 bits is enough to handle
+      long runs.
+   */
+   long getContextEventSequenceNumber() ; 
+
+  /** Annotated, stringified event information.
+      @return an arbitrary string.
+   */
+   string getContextEventDescription() ;
+
+  /** Set or amend the description, as determined by the implementation.
+   */
+   void setContextEventDescription(in string description) ;
+
+  ///// PortDefinitionEvent specific functions
+  /** @return id of component now providing or registering a port. */
+   gov.cca.ComponentID getComponent() ; 
+
+  /** @return properties supplied to the provide or register call. */
+   gov.cca.TypeMap getPortProperties() ; 
+
+  /** Fetch instance name of port.
+      @return port instance name supplied to the provide or register call.
+   */
+    string getPortName() ;
+
+  /** Fetch class name of port.
+     @return port instance type supplied to the provide or register call.
+   */
+    string getPortType() ;
+  
+}  // end interface PortDefinitionEvent
+
+} // end package ce
+} // end package ccaffeine
+

@@ -1,0 +1,56 @@
+This is a stab at comparing EventService ala Nathan/Ayla/Steve to
+Ccaffeine's prototype for CCA-lifecycle and some notes on 
+potential unification. The prototype can be viewed at:
+http://www.cca-forum.org/~baallan/currentSpec/html/namespaceccaffeine_1_1ce.html
+
+CCA specific Channels: 
+
+First pass: 
+- Make the channels similar to the concrete types namewise.
+- Note that the entire model in Ccaffeine is frame-scoped, so we'll need
+  to add a prefix here on all the channels if we export beyond a frame scope.
+  For example the channels might all be prefixed with "frame-####." where
+  #### is somehow mappable to an instance of the frame; it would need to
+  be more complicated if the frame is off-process.
+  Everywhere that ccaffeine appears is a candidate for replacing with "cca."
+  in the following list of channel names (replace . with / as needed).
+  Here are channel names equivalent to the events the prototype contains:
+	"ccaffeine.ContextEvent"
+	"ccaffeine.ComponentFactory"
+	"ccaffeine.ComponentInstance.Added"
+	"ccaffeine.ComponentInstance.AddRequest"
+	"ccaffeine.ComponentInstance.Deleted"
+	"ccaffeine.ComponentInstance.DeleteRequest"
+	"ccaffeine.ContextConnection"
+	"ccaffeine.PortActivity"
+	"ccaffeine.PortDefinition"
+
+Observations based on the ccafe04 prototype:
+
+- I included a stub for generic events, but it proved of no
+utility in the framework itself.
+
+- I didn't find it useful within in some of these channels/events
+(ComponentFactory, PortActivity, PortDefinition, ContextConnection)
+to distinguish at the event class level some finer details. Instead,
+each event carries an enum'd type as described at
+url given at the beginning of this document.
+
+- Particular sticky points compared to TypeMap based events.
+  -- With an in-core framework, event-delivery carrying TypeMaps
+     through babel requires that a *copy* of the typemap (not likely
+     to be a lightweight exercise) be made for each listener. If not
+     copied, modifications made to the typemap by the first listener
+     taking delivery can mislead subsequent listeners.
+
+  -- I didn't find it useful to query a TypeMap for
+    event-class specific payload values that will always be used.
+    Specific methods on the event object are provided instead.
+
+  -- I didn't find it useful to return string values whose only real
+    use is to invoke an object lookup on the BuilderService interface.
+    "Everything is a string/TypeMap"+BuilderService just bloats the event
+    receiver's code enormously. Methods that return ComponentID, etc are
+    provided.
+
+

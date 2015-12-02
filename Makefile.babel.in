@@ -1,0 +1,112 @@
+include babel.make
+BABEL_HOME = @CCASPEC_BABEL_ROOT@
+CCASPEC_BABEL_CXX=@CCASPEC_BABEL_CXX@
+CCASPEC_BABEL_CC=@CCASPEC_BABEL_CC@
+CCASPEC_BABEL_VERSION_MAJOR=@CCASPEC_BABEL_VERSION_MAJOR@
+CCASPEC_BABEL_VERSION_MINOR=@CCASPEC_BABEL_VERSION_MINOR@
+BABEL_includedir=@BABEL_includedir@
+BABEL_libdir=@BABEL_libdir@
+
+CCASPEC_LIBTOOL_LIB=@CCASPEC_LIBTOOL_LIB@
+CCASPEC_SHARED_LIB=@CCASPEC_SHARED_LIB@
+CCASPEC_STATIC_LIB=@CCASPEC_STATIC_LIB@
+BUILT_LIBTOOL_LIB=@BUILT_LIBTOOL_LIB@
+BUILT_SHARED_LIB=@BUILT_SHARED_LIB@
+BUILT_STATIC_LIB=@BUILT_STATIC_LIB@
+CCASPEC_BABEL_CXXSIDLSTUB_LIB=@CCASPEC_BABEL_CXXSIDLSTUB_LIB@
+
+ENABLE_CONTRIB=@ENABLE_CONTRIB@
+
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
+bindir = @bindir@
+sbindir = @sbindir@
+libexecdir = @libexecdir@
+datadir = @datadir@
+datarootdir = @datarootdir@
+docdir = @datadir@/doc
+sysconfdir = @sysconfdir@
+sharedstatedir = @sharedstatedir@
+localstatedir = @localstatedir@
+libdir = @libdir@
+infodir = @infodir@
+mandir = @mandir@
+includedir = @includedir@
+oldincludedir = /usr/include
+pkgdatadir = @pkgdatadir@
+pkgdocdir = @pkgdocdir@
+pkglibdir = @pkglibdir@
+pkgincludedir = @pkgincludedir@
+transform=@program_transform_name@
+
+LLIB = $(CCASPEC_LIBTOOL_LIB)
+SLIB = $(CCASPEC_STATIC_LIB)
+CXX = $(CCASPEC_BABEL_CXX)
+CC= $(CCASPEC_BABEL_CC)
+RANLIB=@RANLIB@
+LIBTOOL=@CCASPEC_BABEL_BABEL_LIBTOOL@
+LIBTOOL_COMPILEFLAGS=@LIBTOOL_COMPILEFLAGS@
+LIBTOOL_LINKFLAGS=@LIBTOOL_LINKFLAGS@
+SIDLLIB=-R$(BABEL_libdir) @SIDL_LIBS@
+
+QUIET_LIBTOOL=@HIDECOMPILE@
+HIDECOMPILE=@HIDECOMPILE@
+HIDELIBTOOL=@HIDELIBTOOL@
+
+# unfortunately, babel config dribbles out flags it doesn't actually use.
+CXXFLAGS= @CXXFLAGS@ @SIDL_CXXINCS@
+CFLAGS= @CFLAGS@
+LDSO= @LDSO@
+LDSOFLAGS= @LDSOFLAGS@
+# we should be able to construct this next line from babel.make.package,
+# but can't yet probably.
+VPATH += $(BABEL_includedir)/dcxx $(BABEL_includedir)/ucxx $(BABEL_includedir)/cxx $(BABEL_includedir)
+
+
+all: $(LLIB)
+
+.cxx.o:
+	@echo $@
+	$(HIDELIBTOOL)$(LIBTOOL) --mode=compile --tag=CXX $(QUIET_LIBTOOL) $(CXX) $(LIBTOOL_COMPILEFLAGS) $(CXXFLAGS) -I$(BABEL_includedir) -c $<
+
+.c.o:
+	@echo $@
+	$(HIDELIBTOOL)$(LIBTOOL) --mode=compile --tag=CXX $(QUIET_LIBTOOL) $(CC) $(LIBTOOL_COMPILEFLAGS) $(CFLAGS) -I$(BABEL_includedir) -c $< 
+
+.cxx.lo:
+	@echo $@
+	$(HIDELIBTOOL)$(LIBTOOL) --mode=compile --tag=CXX $(QUIET_LIBTOOL) $(CXX) $(LIBTOOL_COMPILEFLAGS) $(CXXFLAGS) -I$(BABEL_includedir) -c $<
+
+.c.lo:
+	@echo $@
+	$(HIDELIBTOOL)$(LIBTOOL) --mode=compile --tag=CXX $(QUIET_LIBTOOL) $(CC) $(CFLAGS) $(LIBTOOL_COMPILEFLAGS) -I$(BABEL_includedir) -c $< 
+
+.SUFFIXES:
+.SUFFIXES: .cc .cxx .c .o .lo
+
+IOBJS1=${IMPLSRCS:.cxx=.lo} ${SKELSRCS:.cxx=.lo}
+IOBJS2=${IOBJS1:.c=.lo}
+
+LOBJS = \
+$(IOBJS2) \
+${IORSRCS:.c=.lo}
+
+# dynamic: actually does both depending on how libtool is configured
+# and whether we pass -static or not in LIBTOOL_LINKFLAGS.
+# Since symlinks to .so are an os-dependent, nonportable detail of library 
+# installation
+# we now just duplicate the library installation from the same objects.
+static dynamic $(LLIB): ${LOBJS}
+        $(HIDELIBTOOL)if test "$(ENABLE_CONTRIB)" = "1"; then \
+	  $(LIBTOOL) --mode=link --tag=CXX $(QUIET_LIBTOOL) $(LDSO) $(LIBTOOL_LINKFLAGS) -rpath $(DESTDIR)$(libdir) -o $(CCASPEC_LIBTOOL_LIB) $(BABL_INCLUDE) ${LOBJS} $(SIDLLIB); \
+	  $(LIBTOOL) --mode=link --tag=CXX $(QUIET_LIBTOOL) $(LDSO) $(LIBTOOL_LINKFLAGS) -rpath $(DESTDIR)$(pkglibdir) -o libcca.la $(BABL_INCLUDE) ${LOBJS} $(SIDLLIB); \
+	fi
+
+clean:
+	-$(LIBTOOL) --mode=clean $(LLIB) $(SLIB) $(BUILT_LIBTOOL_LIB) $(BUILT_STATIC_LIB) $(LOBJS)
+	-$(RM) $(LLIB) $(SLIB) $(BUILT_SHARED_LIB) $(BUILT_STATIC_LIB) $(LOBJS) *.o
+
+depend:
+	-$(DEPEND) $(CXXFLAGS) $(IORSRCS) $(SKELSRCS) $(STUBSRCS) $(IMPLSRCS)
+

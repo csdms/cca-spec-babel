@@ -1,0 +1,114 @@
+#!@SHELL@
+# By ben allan (baallan@ca.sandia.gov)
+# march 31 2003
+BC=@CCASPEC_BABEL_ROOT@/bin/babel-config
+if ! test -x $BC ; then
+  echo "$0: $BC does not exist. Maybe you use an old Babel?"
+  exit 1
+fi
+langlist="c c++ f77 f90 java python"
+varlist="CC CXX F90 F77 PYTHON JAVA JAVAC JAR JAVAH INSTALL"
+echo "version"
+$BC --version
+echo "root for all platform independent files (--prefix)"
+$BC --prefix
+echo "root for all platform specific files (--exec-prefix)"
+$BC --exec-prefix  
+echo "platform specific executables (--bindir)"
+$BC --bindir 
+echo "platform specific libraries (--libdir)"
+$BC --libdir  
+echo "platform independent C (and C++) header files (--includedir)"
+$BC --includedir  
+echo "platform independent data (--datadir)"
+$BC --datadir    
+echo "where jar files are installed (--jardir)"
+$BC --jardir  
+echo "where XML repository for SIDL types are installed (--repodir)"
+$BC --repodir   
+
+
+echo
+echo Languages:
+for i in $langlist ; do
+  echo  -n "--with-$i  "
+  if `$BC --with-$i` ; then
+    echo yes 
+  else
+    echo no
+  fi
+done
+echo
+echo -n 'python server support  '
+if `$BC --with-server-python` ; then
+  echo "yes"
+else
+  echo "no"
+fi
+
+echo
+echo Building:
+echo "-I prepended directories for Babel"
+echo -n "  "
+$BC --includes 
+echo "-I prepended directories for JNI if enabled in Babel"
+echo -n "  "
+$BC --jni-includes  
+
+echo "all flags for LANG, if enabled"
+for i in $langlist ; do
+  echo "--flags-$i"
+  echo -n "  "
+  $BC --flags-$i
+done
+
+echo "--flags-cpp (same as CPPFLAGS)"
+  echo -n "  "
+$BC --flags-cpp    
+echo "--flags-javac"
+  echo -n "  "
+$BC --flags-javac
+
+echo
+for i in $langlist ; do
+  echo "all link library directives for $i, if enabled"
+  echo -n "  "
+  $BC --libs-$i
+  echo "prepended directories (-L) for $i, if enabled"
+  echo -n "  "
+  $BC --libs-${i}-L 
+  echo "prepended libraries (-l) for $i, if enabled"
+  echo -n "  "
+  $BC --libs-${i}-l 
+done
+
+echo
+echo "Checking specific variables"
+echo "Values used in makes at configure time (which may differ in meaning if PATH changed"
+for i in $varlist ; do
+  echo "--query-var=$i"
+  echo -n "  "
+  $BC --query-var=$i
+done
+echo
+echo "WHICHPATH: (things now in the PATH used then) "
+echo "Values used in configure, according to the current state "
+echo "     of the PATH value recorded at configure time. "
+for i in $varlist ; do
+  echo "--which-var=$i"
+  echo -n "  "
+  $BC --which-var=$i
+done
+echo
+echo "CONFIGPATH: (things in the path then)"
+echo "Values used in configure, according to 'which' as recorded "
+echo "at configure time. If a tool was uninstalled these may not work now."
+for i in $varlist ; do
+  echo "--configpath-var=$i"
+  echo -n "  "
+  $BC --configpath-var=$i
+done
+echo
+# echo "Dumping with --dump-vars"
+# $BC --dump-vars
+exit 0

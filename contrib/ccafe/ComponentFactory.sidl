@@ -1,0 +1,88 @@
+// This interface Ccaffeine can't live without, so we'll document some of 
+// the ccaffeine package hierarchy here.
+
+/** Ccaffeine is an in-core component framework for HPC and the contrib/ccafe
+files are published for anyone to reuse in their own framworks
+or build against without having the full Ccaffeine installation available.
+With luck, this will promote prototyping common services across frameworks
+and will keep the developers of Ccaffeine more disciplined about changing
+the public interfaces of Ccaffeine.
+*/
+package ccaffeine version 0.3 {
+
+  /** These ports are contributed to the world at large and represent a
+   commitment to (mostly) stable framework APIs for component writers in the 
+   Ccaffeine environment. The ce subpackage is still under development/implementation as the CCA attempts to evolve an event standard set.
+  */
+  package ports { 
+
+    /** 
+     * This is related to, but not the same as, ComponentRepository.
+     * This is because this interface can create a raw
+     * Component and ComponentRepository on purpose cannot.
+     * A raw component is just an instance on which setServices
+     * has not been called at all.
+     *
+     * The only safe way this port can be safely used,
+     * since it dictates that destroyComponentInstance
+     * must be called when done, is for the caller
+     * to never release the factory port in the interval
+     * between create and destroy. Since the likely caller
+     * is the framework, this usually isn't a problem.
+     *
+     * In ccaffeine, any component-exported port that
+     * labels itself as supporting this port type
+     * ("ccaffeine.ports.ComponentFactory") will be incorporated
+     * in the components list for the frame.
+     */
+    interface ComponentFactory extends gov.cca.ports.ComponentRepository {
+
+	/** Names of classes for which this factory can make instances.
+	* These names are the palette alias names for presentation to
+	* a user. The real names can be obtained by querying the
+	* corresponding componentClassDescriptions per the ComponentRepository
+	* interface or getComponentClasses here.
+	*/
+	array< string> getComponentClassAliases();
+
+	/** Descriptions of classes this factory might make.
+	* Interaction with a Loader may be needed
+	* before createComponentInstance is possible in order
+	* to make the component class 'available'.
+	*/
+	array< gov.cca.ComponentClassDescription > getComponentClasses();
+
+        /** The component instance returned is nil if the name is unknown
+            to the factory. The component is raw: it has been constructed
+	    but not initialized via setServices.
+	*/
+	gov.cca.Component createComponentInstance ( in string className);
+
+        /** 
+	Properties passing version of raw instance creation, which might 
+	include remote port and so forth at such time as babel rmi is supported.
+	The component is raw: it has been constructed
+	but not initialized via setServices.
+	@param className babel class name or alias from getComponentClassAliases;
+	where there is a conflict with a babel clas name, the alias wins.
+	@param properties -- whatever suggestions the driver has
+	or the framework obtains by whatever method from the user.
+	@return This may return a
+	nil reference if the properties specified are unsupported in
+	some way; in this case the version of create called without
+	properties may still succeed. A nil reference may also result
+	if the className given is not known to this factory.
+	*/
+	gov.cca.Component createComponentInstance[WithProperties] ( in string className, in gov.cca.TypeMap properties);
+
+	/** Reclaim any resources the factory may have associated with
+		the port it is using. This will occur after the
+	normal component shutdown  (ala componentrelease) is finished. */
+	void destroyComponentInstance (in string className, in gov.cca.Component c);
+    } // end interface ComponentFactory
+
+  } // end subpackage ports
+
+} // end package ccaffeine
+
+

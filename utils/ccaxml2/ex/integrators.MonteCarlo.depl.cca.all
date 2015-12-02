@@ -1,0 +1,35 @@
+<?xml version="1.0" ?>
+<!-- this bit is for babel dynamic loader -->
+<scl>
+<library resolution="now" scope="global" uri="/home/elwasif/CCA/tutorial/src-sc07/install/lib/libintegrators.MonteCarlo.la"/>
+<class desc="ior/impl" name="integrators.MonteCarlo"/>
+</scl>
+<!-- this bit is for cca browsing and linker scheduling -->
+<componentDeployment name="integrators.MonteCarlo" palletClassAlias="integrators.MonteCarlo" uniqueID="elwasif@bluenile.ornl.gov:integrators.MonteCarlo:2007-12-07|16:53:18.131343">
+   <server>
+      <libtool>/home/elwasif/CCA/tutorial/src-sc07/install/lib/>libintegrators.MonteCarlo.la</libtool>
+      <shared>/home/elwasif/CCA/tutorial/src-sc07/install/lib/libintegrators.MonteCarlo.so"</shared>
+      <static>/home/elwasif/CCA/tutorial/src-sc07/install/lib/libintegrators.MonteCarlo.a</static>
+      <include>/home/elwasif/CCA/tutorial/src-sc07/install/include</include>
+      <!-- external libraries (non sidl) and flags to link them to an app if needed.-->
+      <sharedDependenciesFlags></sharedDependenciesFlags> <!-- usually none -->
+      <staticDependenciesFlags></staticDependenciesFlags>
+      <libtoolDependenciesFlags></libtoolDependenciesFlags>
+   </server>
+   <client_c>
+		<include>/home/elwasif/CCA/tutorial/src-sc07/install/include</include>
+                <libpath>/home/elwasif/CCA/tutorial/src-sc07/install/lib</libpath>
+		<library>"libintegrators.MonteCarlo-c.a"</library>
+         <client headerpath="/home/elwasif/CCA/tutorial/src-sc07/install/include" language="cxx" libpath="/home/elwasif/CCA/tutorial/src-sc07/install/lib" library="libintegrators.MonteCarlo-cxx.a"/>
+         <client headerpath="/home/elwasif/CCA/tutorial/src-sc07/install/include" language="f90" libpath="/home/elwasif/CCA/tutorial/src-sc07/install/lib" library="libintegrators.MonteCarlo-f90.a"/>
+         <client language="f77" libpath="/home/elwasif/CCA/tutorial/src-sc07/install/lib" library="libintegrators.MonteCarlo-f77.a"/>
+      </clientList>
+
+   <usePortLibList>
+      <usePortLib library="libfunction.FunctionPort-f90.a" path="/home/elwasif/CCA/tutorial/src-sc07/install/lib"/>
+   </usePortLibList>
+   <providePortLibList>
+      <providePortLib library="libintegrator.IntegratorPort-f90.a" path="/home/elwasif/CCA/tutorial/src-sc07/install/lib"/>
+   </providePortLibList>
+</componentDependenciesloyment>
+

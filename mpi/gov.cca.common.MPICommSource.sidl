@@ -1,0 +1,21 @@
+package gov {
+package cca  version 0.8.5  {
+package common version 0.0 { 
+
+/** Externally added to the AbstractFramework, or loaded into
+ an environment which already supports mpi (mpi_init has been called).
+*/
+class MPICommSource implements-all 
+	gov.cca.Component, 
+	gov.cca.ComponentRelease,
+	gov.cca.ports.MPIBorrow,
+	gov.cca.ports.MPIService,
+	gov.cca.ports.MPIServer
+{
+
+
+} // end class MPIComponent
+
+} // end namespace common
+} // end namespace cca
+} // end namespace gov

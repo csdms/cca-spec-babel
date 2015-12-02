@@ -1,0 +1,44 @@
+#!@SHELL@
+# caution: not done yet. just the starting point from
+# the java converter from sc02.
+export Tcl="@TCLSH@"
+progname="ctor"
+exec_prefix=@exec_prefix@
+progsuffix=-@CCASPEC_VERSION@
+Simp=./$progname.tcl$progsuffix
+SCAN_CCA_XML=@NEOCCA_INSTALL_ROOT@/bin/scanCCAxml.x$progsuffix
+export SCAN_CCA_XML
+if [ "x$1" = "x" ] ; then
+	echo "$progname requires an input file argument"
+	exit 1
+fi
+if [ "x$Tcl" =  "x" ] ; then
+	echo 'tclsh not found';
+	echo 'Please rerun configure with \"--with-tclsh=/path/to/your/tclsh\" added'
+	exit 1;
+fi
+
+if [ -f ./$progname.tcl$progsuffix ] ; then
+	Simp=./$progname.tcl$progsuffix;
+fi
+
+if [ -f ../src/$progname.tcl$progsuffix ] ; then
+	Simp=../src/$progname.tcl$progsuffix;
+fi
+
+if [ -f ../src/$progname.tcl ] ; then
+	Simp=../src/$progname.tcl;
+fi
+
+if [ -f @bindir@/$progname.tcl$progsuffix ] ; then
+	Simp=@bindir@/$progname.tcl$progsuffix;
+fi
+
+if [ "x$Simp" = "x" ] ; then
+	echo "$progname.tcl$progsuffix not found in pwd";
+	exit 1;
+fi
+
+exec $Tcl $Simp -- $*
+exit 0
+

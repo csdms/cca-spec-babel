@@ -1,0 +1,19 @@
+package ccaffeine version 0.3 {
+package ce {
+
+/** This is the interface that a component must implement
+    in order to be notified specifically of ContextConnection Events. 
+*/
+interface ContextConnectionEventListener 
+{
+
+
+  /** Called on listeners when an event occurs. */
+   void doContextConnection(in ContextConnectionEvent event) ; 
+
+}  // end interface ContextConnectionEventListener
+
+
+} // end package ce
+} // end package ccaffeine
+

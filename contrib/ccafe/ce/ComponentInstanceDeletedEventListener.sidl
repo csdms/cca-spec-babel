@@ -1,0 +1,18 @@
+package ccaffeine version 0.3 {
+package ce {
+
+/** This is the interface that a component must implement
+    in order to be notified specifically of ComponentInstanceDeleted Events. 
+*/
+interface ComponentInstanceDeletedEventListener 
+{
+
+
+  /** Called on listeners when an event occurs. */
+   void doComponentInstanceDeleted(in ComponentInstanceDeletedEvent event) ; 
+
+}  // end interface ComponentInstanceDeletedEventListener
+
+} // end package ce
+} // end package ccaffeine
+

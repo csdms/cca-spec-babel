@@ -1,0 +1,17 @@
+package ccaffeine version 0.3 {
+
+ 	/** To write ccaffeine-free code based on the CCA-specification
+	and run it in any framework, wrap the code in this interface.
+	From the gov.cca.AbstractFramework, everything else needed
+	to manage a set of components (BuilderService, etc) can be
+	obtained.
+	@param af an instance of AbstractFramework with the
+		implementation type hidden by this interface.
+	*/
+	interface BabelMain {
+		void driverBody(inout gov.cca.AbstractFramework af);
+	}
+
+} // end package ccaffeine
+
+

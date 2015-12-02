@@ -1,0 +1,41 @@
+
+package ccaffeine version 0.3 {
+
+  package ports { 
+
+    /** 
+     * "ccafe.ports.MPIService": 
+     * UNADOPTED-standard service for getting a private mpi comm.
+     *
+     * As MPI Forum explicitly DOES NOT define an interlanguage
+     * form for object (comm, group, etc) handles, we use the
+     * FORTRAN form which, being an integer of some size <= long
+     * in SIDL, we will express in SIDL as a long.
+     * Implementations in C/C++/Python will have to use appropriate
+     * conversion operators, MPI_Comm_c2f/MPI_Comm_f2c etc, when
+     * passing/receiving object handles in long form.
+     */
+    interface MPIService extends gov.cca.Port {
+
+      /** Get an mpi communicator with the same scope as the component instance.
+       Won't be mpi_comm_null. The communicator returned will be
+       private to the recipient, which implies an mpicommdup.
+       @return The comm produced, in FORTRAN form. C callers use comm_f2c
+    	   method defined by their mpi implementation, usually MPI_Comm_f2c,
+    	   to convert result to MPI_Comm.
+       @throw CCAException if the service cannot be implemented because MPI is
+    	  not present.
+       */
+      long getComm() throws gov.cca.CCAException;
+
+      /** Let go the communicator. previously fetched with getComm.
+       *  @throw CCAException if an error is detected.
+       */
+      void releaseComm(in long comm) throws gov.cca.CCAException;
+
+    }
+
+  } // end subpackage ports
+
+} // end package ccaffeine
+

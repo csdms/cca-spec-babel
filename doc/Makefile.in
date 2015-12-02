@@ -1,0 +1,35 @@
+
+DOXYGEN = doxygen
+DOXYGEN_CFG = doxygen.cfg
+SRCDIR = @fullpathsrcdir@
+BINDIR = $(SRCDIR)/doc
+SIDLFILES = ../cca.sidl
+ifeq "1" "@ENABLE_CONTRIB@"
+SIDLFILES += $(shell ls $(SRCDIR)/contrib/hello/*.sidl $(SRCDIR)/contrib/ccafe/*.sidl $(SRCDIR)/contrib/ccafe/ce/*.sidl)
+endif
+
+
+default: html
+
+# make html will build the html documentation
+.PHONY: html
+html: java
+	/bin/rm -rf html
+	$(DOXYGEN) $(DOXYGEN_CFG)
+
+.PHONY: java
+java:
+	/bin/rm -rf java
+	mkdir -p java/contrib/ccafe/ce java/contrib/hello
+	for sidl in $(SIDLFILES); \
+	  do \
+		outfile=`echo $${sidl} | sed s+$(SRCDIR)/++ | sed s/sidl/java/g`; \
+		echo $$outfile ; \
+		$(BINDIR)/sidltojava $${sidl} > java/$$outfile || exit 1; \
+	  done
+
+clean:
+	/bin/rm -rf java *.java
+
+distclean: clean
+	/bin/rm -rf html

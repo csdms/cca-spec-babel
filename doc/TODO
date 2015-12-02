@@ -1,0 +1,4 @@
+Create a utility for sidl unification that takes a pile of sidl,
+and reorders everything into namespaces in a single file, eliminating
+imports.
+This is a workaround for idiocies in babel about namespace redefinition.

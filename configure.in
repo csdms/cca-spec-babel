@@ -1,0 +1,734 @@
+dnl Process this file with autoconf to produce a configure script.
+dnl forget caching...
+define([AC_CACHE_LOAD], )dnl
+define([AC_CACHE_SAVE], )dnl
+
+AC_INIT(babel_compat.hh.in)
+AC_PREREQ(2.60) 
+AC_PREFIX_DEFAULT([`pwd`])
+
+AC_CONFIG_AUX_DIR(config)
+CCA_BUNDLE_TAG
+# record the args to configure in a var
+CCAFE_CONFIG_ARGS(CCASPEC_CONFIG_ARGS)
+CCAFE_PUSHD
+
+############# version ############
+# this is the definitive place where
+# version numbers of the cca spec in babel
+# (for versions 0.6.1 and beyond)
+# gets set. Every where else it appears 
+# is generated
+CCASPEC_VERSION_MAJOR="0"
+CCASPEC_VERSION_MINOR="8"
+CCASPEC_VERSION_PATCH="6"
+CCASPEC_VERSION="${CCASPEC_VERSION_MAJOR}.${CCASPEC_VERSION_MINOR}.${CCASPEC_VERSION_PATCH}"
+CCASPEC_VERSION_UNDERBAR="${CCASPEC_VERSION_MAJOR}_${CCASPEC_VERSION_MINOR}_${CCASPEC_VERSION_PATCH}"
+CCASPEC_VERSION_RELEASE="unstable"
+##################################
+
+# cause program transform vars to get set
+AC_CANONICAL_SYSTEM
+AC_ARG_PROGRAM
+
+if test "x$program_suffix" != "xNONE" ; then
+  PROGRAM_SUFFIX=$program_suffix
+fi
+
+ccaspec_build_dir=`pwd`
+if test "${exec_prefix}" = "NONE" -a "${prefix}" != "NONE"; then
+    exec_prefix=$prefix
+fi
+if test "${prefix}" = "NONE"; then
+    prefix=`pwd`
+fi
+if test "${exec_prefix}" = "NONE"; then
+    exec_prefix=`pwd`
+fi
+CCAFE_AC_PREFIX($prefix)
+CCAFE_AC_EXEC_PREFIX($exec_prefix)
+
+fullpathsrcdir=`cd $srcdir ; pwd`
+AC_SUBST(fullpathsrcdir)
+
+AC_PROG_CC
+AC_PROG_MAKE_SET
+
+dnl Checks for libraries.
+
+dnl Checks for header files.
+AC_HEADER_STDC
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+
+dnl Checks for library functions.
+
+INSTALL_PREFIX=$prefix
+CCASPEC_BUILD_DIR=$ccaspec_build_dir
+AC_PROG_LN_S
+AC_PROG_RANLIB
+AC_PROG_INSTALL
+CCATUT_PROG_TCLSH
+if test -x $TCLSH -a "x$TCLSH" != "x:" ; then
+HAVE_TCLSH=1
+else
+HAVE_TCLSH=0
+fi
+AC_SUBST(HAVE_TCLSH)
+# get suffix.
+CCAFE_GET_SHLIB_SUFFIX
+
+# below is the libtool value. if we want to support
+# nonlibtool, we need more logic added on a per platform basis later.
+RPATHDIRSWITCH=-R
+
+CCAFE_HIDECOMPILE
+CCAFE_HIDELIBTOOL
+
+dnl find boost headers for shared ptr needed by xml parser.
+dnl
+CSB_CHECK_BOOST
+
+# side effect: reset babel_root 
+BABEL_CONFIG([$BABEL_ROOT], BIN_BABEL_CONFIG)
+
+CCA_BABEL_BRANCH_VERSION
+
+CCASPEC_SUPPORT_STATIC=0
+CCASPEC_SUPPORT_SHARED=0
+
+# compute it, or in legacy versions just guess.
+if test "x$BIN_BABEL_CONFIG" != "x" -a -x $BIN_BABEL_CONFIG ; then
+  bbin=$BIN_BABEL_CONFIG
+  BABEL_bindir=`$bbin --bindir`
+  BABEL_datadir=`$bbin --libdir`
+  BABEL_includedir=`$bbin --includedir`
+  BABEL_jardir=`$bbin --datadir`
+  BABEL_libdir=`$bbin --jardir`
+  BABEL_repodir=`$bbin --repodir`
+  CCASPEC_BABEL_VERSION=`$bbin --version`
+  versiondots=`echo $CCASPEC_BABEL_VERSION | grep '\.'`
+  if test "x$versiondots" = "x"; then
+    # recover from babel-config returning a date for valid versions out of 
+    # nightly snapshots of release branches
+    babelbin="$BABEL_bindir/babel"
+    if test "x$babelbin" != "x" -a -x $babelbin ; then
+      babelverout=`$babelbin --version`
+      for vstr in $babelverout; do
+        versionstring=$vstr
+        versiondots=`echo $versionstring | grep '\.'`
+        if test "x$versiondots" != "x"; then 
+          CCASPEC_BABEL_VERSION="$versionstring"
+        fi
+      done
+    fi
+  fi
+  
+  CUSTOM_BABEL_VERSION="NONE"
+  if test "x$CCA_BABEL_FORCE" != "x" ; then 
+     if test "$CCA_BABEL_FORCE" = "$CCASPEC_BABEL_VERSION" ; then 
+        CUSTOM_BABEL_VERSION=$CCASPEC_BABEL_VERSION     
+     else
+        AC_MSG_ERROR([ Sorry. The experimental babel version CCA_BABEL_FORCE=$CCA_BABEL_FORCE does not match the version of the babel installation $CCASPEC_BABEL_VERSION (obtained with $bbin --version).])
+     fi 
+  fi
+  bad_babel_version=no
+  case "$CCASPEC_BABEL_VERSION" in
+  $CUSTOM_BABEL_VERSION)
+	# everything is ok
+	;; 
+  0.6.*,0.7.*,0.8.*,0.9.*)
+    bad_babel_version=yes
+    AC_MSG_ERROR([ Sorry. Found babel version $CCASPEC_BABEL_VERSION which 
+is really old. Try another.])
+    ;;
+  0.10.[[01234567]])
+    bad_babel_version=yes
+    AC_MSG_ERROR([ Sorry. Found babel version $CCASPEC_BABEL_VERSION which 
+    is too old.
+    Please use version 0.11.0 or later of babel. If another is
+    currently installed, add
+      --with-babel-config=/where/babel/is/bin/babel-config 
+    to override the configure search mechanism.
+])
+  ;;
+  0.11.*)
+	# everything is ok
+	;;
+  esac
+# if we go to 0.11 babel we may want to add logic or just check for
+# bad_babel_version = yes and consolidate the error messages here.
+  CCASPEC_BABEL_VERSION_MAJOR=`echo $CCASPEC_BABEL_VERSION | sed -e 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\1/'`
+  CCASPEC_BABEL_VERSION_MINOR=`echo $CCASPEC_BABEL_VERSION | sed -e 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\2/'`
+  CCASPEC_BABEL_VERSION_PATCH=`echo $CCASPEC_BABEL_VERSION | sed -e 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\3/'`
+
+  if test "x$CCASPEC_BABEL_SNAPSHOT" = "x0"; then
+    CCA_BABEL_BRANCH_FROM_RELEASE($CCASPEC_BABEL_VERSION, $CCASPEC_BABEL_VERSION_MAJOR, $CCASPEC_BABEL_VERSION_MINOR, $CCASPEC_BABEL_VERSION_PATCH)
+  fi
+
+  CCASPEC_CXX_HEADERSUFFIX=hxx
+  CXXFLAGS_CXX_HEADERSUFFIX="-DCXX_HEADER_SUFFIX_HXX"
+    if test "$CCASPEC_BABEL_VERSION_MAJOR" = "0" ; then
+      if [[[ $CCASPEC_BABEL_VERSION_MINOR < 12 ]]] ; then
+      CCASPEC_CXX_HEADERSUFFIX=hh
+      CXXFLAGS_CXX_HEADERSUFFIX=""
+    fi
+  fi
+
+  CCASPEC_BABEL_BABEL_CONFIG="$bbin"
+  CCASPEC_BABEL_BABEL_LIBTOOL=`echo $bbin |sed -e 's%-config%-libtool%g'`
+  CCASPEC_BABEL_CPP=`$bbin --query-var=CPP`
+  CCASPEC_BABEL_CC=`$bbin --configpath-var=CC`
+  CCASPEC_BABEL_CXX=`$bbin --configpath-var=CXX`
+  CCASPEC_BABEL_F77=`$bbin --configpath-var=F77`
+  CCASPEC_BABEL_FLIBS=`$bbin --query-var=FLIBS`
+  CCASPEC_BABEL_FFLAGS=`$bbin --query-var=FFLAGS`
+  CCASPEC_BABEL_F90=`$bbin --configpath-var=FC`
+  CCASPEC_BABEL_F90LIBS=`$bbin --query-var=FCLIBS`
+  CCASPEC_BABEL_F90FLAGS=`$bbin --query-var=FCFLAGS`
+  CCASPEC_BABEL_F90MFLAG=`$bbin --query-var=CHASM_FORTRAN_MFLAGS`
+  if test "x$CCASPEC_BABEL_F90MFLAG" = "x"; then
+    CCASPEC_BABEL_F90MFLAG=`$bbin --query-var=CHASM_FORTRAN_MFLAG`
+  fi
+  if test "x$CCASPEC_BABEL_F90MFLAG" = "x-module"; then
+     tmpcomp=`$bbin --query-var=CHASM_FORTRAN_VENDOR`
+     if test "x$tmpcomp" = "xPGI"; then
+         CCASPEC_BABEL_F90MFLAG="-module "
+     fi
+  fi
+  CCASPEC_BABEL_JAR=`$bbin --configpath-var=JAR`
+  CCASPEC_BABEL_JAVA=`$bbin --configpath-var=JAVA`
+  CCASPEC_BABEL_JAVAC=`$bbin --configpath-var=JAVAC`
+  if test "x$CCASPEC_BABEL_JAVAC" = "x" ; then 
+     CCASPEC_BABEL_JAVAC=`$bbin --query-var=JAVAC`
+  fi
+  CCASPEC_BABEL_JAVAH=`$bbin --configpath-var=JAVAH`
+  CCASPEC_BABEL_PYTHON=`$bbin --configpath-var=PYTHON`
+  CCASPEC_BABEL_PYTHON_VERSION=`$bbin --query-var=PYTHON_VERSION`
+  CCASPEC_BABEL_INCLUDES_PY=`$bbin --includes-py | sed -e 's/^-I//g' | sed -e 's/ -I/:/g'`
+  
+  CCASPEC_BABEL_PYTHONINC=`$bbin --query-var=PYTHONINC`
+  CCASPEC_BABEL_PYTHONLIB=`$bbin --query-var=PYTHONLIB`
+  CCASPEC_BABEL_PYTHON_SHARED_LIBRARY=`$bbin --query-var=PYTHON_SHARED_LIBRARY`
+  CCASPEC_BABEL_PYTHON_SHARED_LIBRARY_DIR=`$bbin --query-var=PYTHON_SHARED_LIBRARY_DIR`
+  CCASPEC_BABEL_ROOT=`$bbin --query-var=prefix`
+  if test "x$CCASPEC_BABEL_PYTHON" = "x@PYTHON@" ; then
+    CCASPEC_BABEL_PYTHON=""
+  fi
+  if test "x$CCASPEC_BABEL_F90" = "x@FC@" ; then
+    CCASPEC_BABEL_F90=""
+  fi
+  BABEL_program=`echo $bbin | sed -e 's%babel-config%babel%g'`
+  if test ! -x $BABEL_program ; then
+    AC_MSG_ERROR([$bbin appears to have no matching $BABEL_program])
+  fi
+  ## Get all babel-supported *client* languages (e.g., no check for Babel server)
+  ## C is always supported
+  BABEL_LANGUAGES=c
+  CCASPEC_SUPPORT_C=1
+  CCASPEC_SUPPORT_CXX=0
+  CCASPEC_SUPPORT_DCXX=0
+  CCASPEC_SUPPORT_UCXX=0
+  if ( $bbin --includes-c++ ) >/dev/null 2>&1 ; then
+    CXXINC=`$bbin --includes-c++`
+  fi
+  if ( $bbin --includes-uc++  ) >/dev/null 2>&1 ; then
+    UCXXINC=`$bbin --includes-uc++`
+  fi
+  if ( $bbin --includes-dc++) >/dev/null 2>&1  ; then
+    DCXXINC=`$bbin --includes-dc++`
+  fi
+  if ( $bbin --libs-cxx-client) >/dev/null 2>&1 ; then
+    CXXSTUBLIB=`$bbin --libs-cxx-client`
+  fi
+  if ( $bbin --libs-ucxx-client ) >/dev/null 2>&1 ; then
+    UCXXSTUBLIB=`$bbin --libs-ucxx-client`
+  fi
+  if ( $bbin --libs-dcxx-client ) >/dev/null 2>&1 ; then
+    DCXXSTUBLIB=`$bbin --libs-dcxx-client`
+  fi
+  BABEL_SUPPORT_STATIC=`$bbin --query-var=SUPPORT_STATIC`
+  if test "$BABEL_SUPPORT_STATIC" = "true" ; then
+	  CCASPEC_SUPPORT_STATIC=1
+  fi
+  BABEL_SUPPORT_SHARED=`$bbin --query-var=SUPPORT_SHARED`
+  if test "$BABEL_SUPPORT_SHARED" = "true" ; then
+	  CCASPEC_SUPPORT_SHARED=1
+  fi
+  BABEL_SUPPORT_CXX=`$bbin --query-var=SUPPORT_CXX`
+  if test "$BABEL_SUPPORT_CXX" = "true" ; then
+	  CCASPEC_SUPPORT_CXX=1
+  fi
+  if ( $bbin --with-c++  ) >/dev/null 2>&1 ; then
+	CCASPEC_SUPPORT_CXX=1
+  fi
+  if ( $bbin --with-uc++  ) >/dev/null 2>&1 ; then
+	CCASPEC_SUPPORT_UCXX=1
+        BABEL_LANGUAGES="$BABEL_LANGUAGES ucxx"
+	BABEL_EXCLUDE="-E --suppress-timestamp"
+  fi
+  if ( $bbin --with-dc++  ) >/dev/null 2>&1 ; then
+	CCASPEC_SUPPORT_DCXX=1
+        BABEL_LANGUAGES="$BABEL_LANGUAGES dcxx"
+	BABEL_EXCLUDE="-E --suppress-timestamp"
+  fi
+  if test "$CCASPEC_SUPPORT_UCXX" = "1"; then
+    if test "$CCASPEC_SUPPORT_DCXX" = "1"; then
+	CCASPEC_SUPPORT_CXX=0
+	CXXSTUBLIB=""
+	CXXINC=""
+	BABEL_EXCLUDE="-E --suppress-timestamp"
+    fi
+  fi
+  SIDL_LIBS="$CXXSTUBLIB $UCXXSTUBLIB $DCXXSTUBLIB"
+  SIDL_CXXINCS="$CXXINC $UCXXINC $DCXXINC"
+  if test "$CCASPEC_SUPPORT_CXX" = "1"; then
+        BABEL_LANGUAGES="$BABEL_LANGUAGES cxx"
+	BABEL_EXCLUDE=""
+  fi
+
+  BABEL_SUPPORT_FORTRAN90=`$bbin --query-var=SUPPORT_FORTRAN90`
+  if test "$BABEL_SUPPORT_FORTRAN90" = "true" ; then
+          BABEL_LANGUAGES="$BABEL_LANGUAGES f90"
+	  CCASPEC_SUPPORT_F90=1
+  fi
+  BABEL_SUPPORT_FORTRAN77=`$bbin --query-var=SUPPORT_FORTRAN77`
+  if test "$BABEL_SUPPORT_FORTRAN77" = "true" ; then
+#          BABEL_LANGUAGES="$BABEL_LANGUAGES f77 f77_31"
+# babel f7731 isn't ready yet.
+          BABEL_LANGUAGES="$BABEL_LANGUAGES f77"
+	  CCASPEC_SUPPORT_F77=1
+	  CCASPEC_SUPPORT_F77_31=0
+  fi
+  BABEL_SUPPORT_PYTHON=`$bbin --query-var=SUPPORT_PYTHON`
+  if test "$BABEL_SUPPORT_PYTHON" = "true" ; then
+          BABEL_LANGUAGES="$BABEL_LANGUAGES python"
+	  BUILD_PYTHON=build-py
+	  CCASPEC_SUPPORT_PYTHON=1
+  fi
+  BABEL_SUPPORT_JAVA=`$bbin --query-var=SUPPORT_JAVA`
+  if test "$BABEL_SUPPORT_JAVA" = "true" ; then
+          BABEL_LANGUAGES="$BABEL_LANGUAGES java"
+	  CCASPEC_SUPPORT_JAVA=1
+  fi
+
+  CCA_BABEL_BRANCH_CHECK
+
+else
+  AC_MSG_ERROR([ Get a more modern Babel please (try 0.11.0 or later). ])
+fi
+AC_MSG_RESULT([ $BABEL_ROOT])
+if test "x$BABEL_program" = "x" -o ! -x $BABEL_program ; then
+  AC_MSG_ERROR([Unable to find babel compiler.])
+fi
+if test "x$CCASPEC_BABEL_BABEL_LIBTOOL" = "x" -o ! -x $CCASPEC_BABEL_BABEL_LIBTOOL ; then
+  AC_MSG_ERROR([Unable to find babel libtool.])
+fi
+SERVER_LANG=c
+
+CCASPEC_PKG_NAME=cca-spec-babel-${CCASPEC_VERSION_UNDERBAR}-babel-$CCASPEC_BABEL_VERSION
+CCASPEC_VER_SUFFIX=_${CCASPEC_VERSION_UNDERBAR}_b_$CCASPEC_BABEL_VERSION
+pkgdatadir=`echo "$datadir/$CCASPEC_PKG_NAME"`
+pkgdocdir=`echo $datadir/doc/$CCASPEC_PKG_NAME`
+pkglibdir=$libdir/$CCASPEC_PKG_NAME
+pkgincludedir=$includedir/$CCASPEC_PKG_NAME
+CCASPEC_STATIC_LIB=libcca${CCASPEC_VER_SUFFIX}${PROGRAM_SUFFIX}.a
+BUILT_STATIC_LIB=libcca.a
+
+LIBTOOL_COMPILEFLAGS=""
+LIBTOOL_LINKFLAGS=""
+LIBTOOL_FINISHFLAGS=""
+if test "x$CCASPEC_SUPPORT_SHARED" = "x0" ; then
+	LIBTOOL_COMPILEFLAGS="-static"
+	LIBTOOL_LINKFLAGS="-static"
+fi
+
+if test "0$prefix" = "0NONE" 
+then 
+    CCASPEC_BABEL_XML_REPOSITORY=`pwd`/server
+    CCASPEC_BABEL_HEADERS=`pwd`/server
+    CCASPEC_BABEL_LIBS=`pwd`/server
+else
+    CCASPEC_BABEL_XML_REPOSITORY=$pkgdatadir/xml
+    CCASPEC_BABEL_HEADERS=$pkgincludedir
+    CCASPEC_BABEL_LIBS=$pkglibdir
+fi
+
+CCA_BABEL_XMLFLAGS="--text=xml"
+GOVCCA_SIDL_START
+
+GOVCCA_SIDL_START_0=" unsupported_babel_version. fix acsite.m4 and configure"
+GOVCCA_SIDL_START_1="// package gov {"
+GOVCCA_SIDL_START_2="// package cca version $CCASPEC_VERSION {"
+GOVCCA_SIDL_START_3="//"
+GOVCCA_SIDL_START_4="//"
+GOVCCA_SIDL_START_5="//"
+
+DEFINE_BABEL_HAVE_MAJOR="#define HAVE_BABEL_MAJOR_0"
+DEFINE_SIDL_LONG_ARRAY1_TYPE="#define SIDL_LONG_ARRAY1_TYPE   ::SIDL::array<int64_t>"
+DEFINE_SIDL_LONG_ARRAY1_PRIMITIVE="#define SIDL_LONG_ARRAY1_PRIMITIVE   int64_t"
+DEFINE_SIDL_LONG_TYPE="#define SIDL_LONG_TYPE     int64_t"
+
+if test "x$CCASPEC_BABEL_VERSION" = "x0.9.2"; then
+  PREAMBLE_VER=09
+  DEFINE_BABEL_HAVE_PATCH="#define HAVE_BABEL_PATCH_0_9_2"
+fi
+if test "x$CCASPEC_BABEL_VERSION" = "x0.9.3"; then
+  PREAMBLE_VER=09
+  DEFINE_BABEL_HAVE_PATCH="#define HAVE_BABEL_PATCH_0_9_3"
+fi
+if test "x$CCASPEC_BABEL_VERSION" = "x0.9.5"; then
+  PREAMBLE_VER=09
+  DEFINE_BABEL_HAVE_PATCH="#define HAVE_BABEL_PATCH_0_9_5"
+fi
+if test "x$CCASPEC_BABEL_VERSION" = "x0.9.4"; then
+  PREAMBLE_VER=09
+  DEFINE_BABEL_HAVE_PATCH="#define HAVE_BABEL_PATCH_0_9_4"
+fi
+if test "x$CCASPEC_BABEL_VERSION" = "x0.9.6"; then
+  PREAMBLE_VER=09
+  DEFINE_BABEL_HAVE_PATCH="#define HAVE_BABEL_PATCH_0_9_6"
+fi
+if test "x$CCASPEC_BABEL_VERSION" = "x0.9.8"; then
+  PREAMBLE_VER=09
+  DEFINE_BABEL_HAVE_PATCH="#define HAVE_BABEL_PATCH_0_9_8"
+fi
+if test "x$CCASPEC_BABEL_VERSION" = "x0.10.0"; then
+  PREAMBLE_VER=09
+  DEFINE_BABEL_HAVE_PATCH="#define HAVE_BABEL_PATCH_0_10_0"
+fi
+if test "x$CCASPEC_BABEL_VERSION" = "x0.10.1"; then
+  PREAMBLE_VER=09
+  DEFINE_BABEL_HAVE_PATCH="#define HAVE_BABEL_PATCH_0_10_1"
+fi
+if test "x$CCASPEC_BABEL_VERSION" = "x0.10.2"; then
+  PREAMBLE_VER=10
+  DEFINE_BABEL_HAVE_PATCH="#define HAVE_BABEL_PATCH_0_10_2"
+fi
+if test "x$CCASPEC_BABEL_VERSION" = "x0.10.3"; then
+  PREAMBLE_VER=10
+  DEFINE_BABEL_HAVE_PATCH="#define HAVE_BABEL_PATCH_0_10_3"
+fi
+DEFINE_SIDL_EXCEPTION_getMessage=""
+
+if test "x$PREAMBLE_VER" = "x09" -o "x$PREAMBLE_VER" = "x10";  then
+  DEFINE_BABEL_HAVE_MINOR="#define HAVE_BABEL_MINOR_0_9"
+  GOVCCA_SIDL_START_0=""
+  GOVCCA_SIDL_START_1="package gov {"
+  GOVCCA_SIDL_START_2="package cca version $CCASPEC_VERSION {"
+  DEFINE_SIDL_EXCEPTION_getMessage="#define SIDL_EXCEPTION_getMessage      getNote"
+  DEFINE_SIDL_EXCEPTION_setMessage="#define SIDL_EXCEPTION_setMessage      setNote"
+  DEFINE_SIDL_EXCEPTION_getTrace="#define SIDL_EXCEPTION_getTrace        getTrace"
+  DEFINE_SIDL_EXCEPTION_addToStackTrace="#define SIDL_EXCEPTION_addToStackTrace add"
+  DEFINE_SIDL_EXCEPTION_addToTrace="#define SIDL_EXCEPTION_addToTrace      add"
+fi
+
+if test -z "$DEFINE_SIDL_EXCEPTION_getMessage" ; then
+AC_MSG_ERROR([Babel version $CCASPEC_BABEL_VERSION unsupported by cca specification.
+ It may be that the DEFINE_SIDL_EXCEPTION section in configure.in needs repair.]) 
+fi
+
+CC=$CCASPEC_BABEL_CC
+CPP=$CCASPEC_BABEL_CPP
+CXX=$CCASPEC_BABEL_CXX
+F90=$CCASPEC_BABEL_F90
+
+CCA_ENABLE_CONTRIB
+AC_SUBST(ENABLE_CONTRIB)
+
+CCA_ENABLE_MPI
+AC_SUBST(ENABLE_MPI)
+
+
+CCASPEC_SHARED_LIB=libcca${CCASPEC_VER_SUFFIX}${PROGRAM_SUFFIX}$SHLIB_SUFFIX
+BUILT_SHARED_LIB=libcca${CCASPEC_VER_SUFFIX}${PROGRAM_SUFFIX}$SHLIB_SUFFIX
+CCASPEC_LIBTOOL_LIB=libcca${CCASPEC_VER_SUFFIX}${PROGRAM_SUFFIX}.la
+CCASPEC_LIBTOOL_LIB_C=libcca${CCASPEC_VER_SUFFIX}${PROGRAM_SUFFIX}-c.la
+CCASPEC_LIBTOOL_LIB_UCXX=libcca${CCASPEC_VER_SUFFIX}${PROGRAM_SUFFIX}-ucxx.la
+CCASPEC_LIBTOOL_LIB_DCXX=libcca${CCASPEC_VER_SUFFIX}${PROGRAM_SUFFIX}-dcxx.la
+CCASPEC_LIBTOOL_LIB_CXX=libcca${CCASPEC_VER_SUFFIX}${PROGRAM_SUFFIX}-cxx.la
+BUILT_LIBTOOL_LIB=libcca${CCASPEC_VER_SUFFIX}${PROGRAM_SUFFIX}.la
+
+CCASPEC_BABEL_CFLAGS="$CCASPEC_BABEL_CFLAGS $CPICFLAGS $CGFLAG $CQSTATFLAG"
+CCASPEC_BABEL_CXXFLAGS="$CCASPEC_BABEL_CXXFLAGS $CXXPICFLAGS $CXXGFLAG $CXXQSTATFLAG $CXXRTTIFLAG $CXXFLAGS_HEADER_SUFFIX"
+
+
+CFLAGS="$CFLAGS $CCASPEC_BABEL_CFLAGS"
+CXXFLAGS="$CXXFLAGS $CCASPEC_BABEL_CXXFLAGS"
+FFLAGS="$FFLAGS $CCASPEC_BABEL_FFLAGS"
+F90FLAGS="$F90FLAGS $CCASPEC_BABEL_F90FLAGS"
+
+if test "x$build_os" = "xaix"; then
+  if test "x$CXX" = "xxlC" -o "x$CXX" = "x/bin/xlC"; then
+    CCASPEC_BABEL_CXX=${CXX}_r
+    CXX=$CCASPEC_BABEL_CXX
+  fi
+  if test "x$CC" = "xxlc" -o "x$CC" = "x/bin/xlc"; then
+    CCASPEC_BABEL_CC=${CC}_r
+    CC=$CCASPEC_BABEL_CC
+  fi
+fi
+LDSO="$CXX $CXXFLAGS"
+LDSOFLAGS="$CXXLDFLAGS $SOFLAGS"
+
+if ! test "x$CCASPEC_BABEL_PYTHON" = "x"; then
+  UTIL_PYTHON=$CCASPEC_BABEL_PYTHON
+else
+	# compute nonbabel py
+	PROG_PYTHON
+fi
+  
+# find xml2-config related stuff.
+LLNL_LIBXML_CONFIG
+LIBXML2_LIB=$LIBXML2_LIB_NOLIBTOOL
+AC_SUBST(LIBXML2_LIB)
+AC_SUBST(LIBXML2_CFLAGS)
+AC_SUBST(XML2_CONFIG)
+AC_SUBST(XML2_VERSION)
+if test "x$XML2_CONFIG" = "xno"; then
+	HAVE_XML2=0
+else
+	HAVE_XML2=1
+fi
+AC_SUBST(HAVE_XML2)
+
+AC_SUBST(DEFINE_BABEL_HAVE_MAJOR)
+AC_SUBST(DEFINE_BABEL_HAVE_MINOR)
+AC_SUBST(DEFINE_BABEL_HAVE_PATCH)
+AC_SUBST(DEFINE_SIDL_EXCEPTION_getMessage)
+AC_SUBST(DEFINE_SIDL_EXCEPTION_setMessage)
+AC_SUBST(DEFINE_SIDL_EXCEPTION_getTrace)
+AC_SUBST(DEFINE_SIDL_EXCEPTION_addToStackTrace)
+AC_SUBST(DEFINE_SIDL_EXCEPTION_addToTrace)
+AC_SUBST(DEFINE_SIDL_LONG_ARRAY1_TYPE)
+AC_SUBST(DEFINE_SIDL_LONG_ARRAY1_PRIMITIVE)
+AC_SUBST(DEFINE_SIDL_LONG_TYPE)
+
+AC_SUBST(BABEL_ROOT)
+AC_SUBST(CCASPEC_BABEL_ROOT)
+AC_SUBST(CCASPEC_BABEL_VERSION)
+AC_SUBST(CCASPEC_BABEL_VERSION_MAJOR)
+AC_SUBST(CCASPEC_BABEL_VERSION_MINOR)
+AC_SUBST(CCASPEC_BABEL_VERSION_PATCH)
+AC_SUBST(CCASPEC_BABEL_CPP)
+AC_SUBST(CCASPEC_BABEL_CC)
+AC_SUBST(CCASPEC_BABEL_CFLAGS)
+AC_SUBST(CCASPEC_BABEL_CXX)
+AC_SUBST(CCASPEC_BABEL_CXXLIBS)
+AC_SUBST(CCASPEC_BABEL_CXXFLAGS)
+AC_SUBST(CCASPEC_BABEL_F77)
+AC_SUBST(CCASPEC_BABEL_FFLAGS)
+AC_SUBST(CCASPEC_BABEL_FLIBS)
+AC_SUBST(CCASPEC_BABEL_F90)
+AC_SUBST(CCASPEC_BABEL_F90FLAGS)
+AC_SUBST(CCASPEC_BABEL_F90LIBS)
+AC_SUBST(CCASPEC_BABEL_F90MFLAG)
+AC_SUBST(CCASPEC_BABEL_JAVA)
+AC_SUBST(CCASPEC_BABEL_JAVAC)
+AC_SUBST(CCASPEC_BABEL_JAVAH)
+AC_SUBST(CCASPEC_BABEL_JAR)
+AC_SUBST(CCASPEC_BABEL_PYTHON)
+AC_SUBST(CCASPEC_BABEL_PYTHON_VERSION)
+AC_SUBST(CCASPEC_BABEL_INCLUDES_PY)
+AC_SUBST(CCASPEC_BABEL_PYTHONINC)
+AC_SUBST(CCASPEC_BABEL_PYTHONLIB)
+AC_SUBST(BABEL_EXCLUDE)
+AC_SUBST(SERVER_LANG)
+AC_SUBST(CCASPEC_SUPPORT_C)
+AC_SUBST(CCASPEC_SUPPORT_DCXX)
+AC_SUBST(CCASPEC_SUPPORT_UCXX)
+AC_SUBST(CCASPEC_SUPPORT_CXX)
+AC_SUBST(CCASPEC_SUPPORT_F90)
+AC_SUBST(CCASPEC_SUPPORT_F77)
+AC_SUBST(CCASPEC_SUPPORT_F77_31)
+AC_SUBST(CCASPEC_SUPPORT_JAVA)
+AC_SUBST(CCASPEC_SUPPORT_STATIC)
+AC_SUBST(CCASPEC_SUPPORT_SHARED)
+AC_SUBST(CCASPEC_CXX_HEADERSUFFIX)
+AC_SUBST(SIDL_CXXINCS)
+AC_SUBST(CXXINC)
+AC_SUBST(UCXXINC)
+AC_SUBST(DCXXINC)
+AC_SUBST(SIDL_LIBS)
+AC_SUBST(CXXSTUBLIB)
+AC_SUBST(DCXXSTUBLIB)
+AC_SUBST(UCXXSTUBLIB)
+AC_SUBST(BABEL_bindir)
+AC_SUBST(BABEL_datadir)
+AC_SUBST(BABEL_includedir)
+AC_SUBST(BABEL_jardir)
+AC_SUBST(BABEL_libdir)
+AC_SUBST(BABEL_repodir)
+AC_SUBST(BABEL_program)
+AC_SUBST(BABEL_LANGUAGES)
+AC_SUBST(CCASPEC_BABEL_BABEL_CONFIG)
+AC_SUBST(CCASPEC_BABEL_BABEL_LIBTOOL)
+AC_SUBST(LIBTOOL_LINKFLAGS)
+AC_SUBST(LIBTOOL_FINISHFLAGS)
+AC_SUBST(LIBTOOL_COMPILEFLAGS)
+AC_SUBST(CCASPEC_BABEL_PYTHON_SHARED_LIBRARY)
+AC_SUBST(CCASPEC_BABEL_PYTHON_SHARED_LIBRARY_DIR)
+AC_SUBST(CCASPEC_PKG_NAME)
+AC_SUBST(CCASPEC_VER_SUFFIX)
+AC_SUBST(PROGRAM_SUFFIX)
+
+AC_SUBST(INSTALL_PREFIX)
+AC_SUBST(INSTALL)
+AC_SUBST(INSTALL_DATA)
+AC_SUBST(RANLIB)
+AC_SUBST(LN_S)
+AC_SUBST(SHLIB_SUFFIX)
+AC_SUBST(CCASPEC_STATIC_LIB)
+AC_SUBST(CCASPEC_SHARED_LIB)
+AC_SUBST(CCASPEC_LIBTOOL_LIB)
+AC_SUBST(CCASPEC_LIBTOOL_LIB_C)
+AC_SUBST(CCASPEC_LIBTOOL_LIB_CXX)
+AC_SUBST(CCASPEC_LIBTOOL_LIB_UCXX)
+AC_SUBST(CCASPEC_LIBTOOL_LIB_DCXX)
+AC_SUBST(BUILT_STATIC_LIB)
+AC_SUBST(BUILT_SHARED_LIB)
+AC_SUBST(BUILT_LIBTOOL_LIB)
+AC_SUBST(pkgdatadir)
+AC_SUBST(pkgdocdir)
+AC_SUBST(pkglibdir)
+AC_SUBST(pkgincludedir)
+AC_SUBST(HIDECOMPILE)
+AC_SUBST(HIDELIBTOOL)
+
+AC_SUBST(GOVCCA_SIDL_START_0)
+AC_SUBST(GOVCCA_SIDL_START_1)
+AC_SUBST(GOVCCA_SIDL_START_2)
+AC_SUBST(GOVCCA_SIDL_START_3)
+AC_SUBST(GOVCCA_SIDL_START_4)
+AC_SUBST(GOVCCA_SIDL_START_5)
+AC_SUBST(CCASPEC_BABEL_XML_REPOSITORY)
+AC_SUBST(CCASPEC_BABEL_HEADERS)
+AC_SUBST(CCASPEC_BABEL_LIBS)
+AC_SUBST(CCASPEC_BUILD_DIR)
+AC_SUBST(CCASPEC_VERSION_UNDERBAR)
+AC_SUBST(CCASPEC_VERSION)
+AC_SUBST(CCASPEC_VERSION_MAJOR)
+AC_SUBST(CCASPEC_VERSION_MINOR)
+AC_SUBST(CCASPEC_VERSION_PATCH)
+AC_SUBST(CCASPEC_VERSION_RELEASE)
+AC_SUBST(CCA_BABEL_XMLFLAGS)
+AC_SUBST(CCASPEC_CONFIG_ARGS)
+AC_SUBST(CFLAGS)
+AC_SUBST(CXXFLAGS)
+AC_SUBST(FFLAGS)
+AC_SUBST(F90FLAGS)
+AC_SUBST(LDSO)
+AC_SUBST(LDSOFLAGS)
+AC_SUBST(CCA_BUNDLE_VERSION)
+
+
+
+if ! test -z "$CCASPEC_BABEL_JAVAC" ; then
+	AC_MSG_RESULT([Using java configured when building BABEL])
+	[JAVA_HOME=`echo $CCASPEC_BABEL_JAVAC | sed 's%/[^/]*$%%' | sed 's%/bin$%%'`]
+	BUILD_PYTHON=build-py
+	JAVA_HM=$JAVA_HOME
+	AC_SUBST(JAVA_HM)
+else
+  AC_MSG_ERROR([cca-spec-babel cannot be used without the java from BABEL])
+fi
+
+dnl Babel python tests
+
+
+AC_ARG_WITH(babel-python, 
+    [  --with-babel-python   Generate Babel Python code for cca specification. ] ,
+    , [with_babel_python=no])
+
+case "$with_babel_python" in
+
+yes)
+	CCASPEC_BUILD_PY=1
+	CCASPEC_SUPPORT_PYTHON=1
+	;;
+no)
+	CCASPEC_BUILD_PY="" 
+	;;
+esac
+
+AC_SUBST(CCASPEC_BUILD_PY)
+if test "x$CCASPEC_BUILD_PY" = "x1"; then
+  BUILD_PYTHON=build-py
+elif test "x$BABEL_SUPPORT_PYTHON" = "xtrue"; then
+  BUILD_PYTHON=build-py
+else
+  BUILD_PYTHON=build-no-py
+fi
+AC_SUBST(BUILD_PYTHON)
+AC_SUBST(RPATHDIRSWITCH)
+AC_SUBST(CCASPEC_SUPPORT_PYTHON)
+
+dnl End Babel python tests
+
+if test "x$HAVE_XML2" = "x0" ; then
+        AC_MSG_WARN([configure did not detect libxml2.
+	Skipping build of xml-dependent translators scripts.
+	Reconfigure using --with-libxml2 option if translators are needed.
+])
+fi
+
+AC_CONFIG_FILES([
+utils/Makefile_template.client 
+src/cca-spec-babel-config
+src/genSCLCCA.sh
+src/CCA_Babel_Vars.sh
+src/MakeIncl_CCA_Babel_Vars
+src/test-babel-config
+src/bld2babel-cpp
+src/ctor
+src/varlist
+Makefile 
+Makefile.babel 
+babel_compat.hh
+reconfigure 
+utils/Makefile 
+doc/Makefile 
+doc/doxygen.cfg
+])
+
+
+AC_CONFIG_COMMANDS([outmsg],
+[
+chmod +x reconfigure
+echo "=== Summary of configuration ==="
+echo "Installation will be in $prefix"
+echo "CCASPEC_BABEL_VERSION=$CCASPEC_BABEL_VERSION"
+echo "CCASPEC_BABEL_BRANCH=$CCASPEC_BABEL_BRANCH"
+echo "CCASPEC_SUPPORT_C=$CCASPEC_SUPPORT_C"
+echo "CCASPEC_SUPPORT_CXX=$CCASPEC_SUPPORT_CXX"
+echo "CCASPEC_SUPPORT_DCXX=$CCASPEC_SUPPORT_DCXX"
+echo "CCASPEC_SUPPORT_UCXX=$CCASPEC_SUPPORT_UCXX"
+echo "CCASPEC_SUPPORT_F90=$CCASPEC_SUPPORT_F90"
+echo "CCASPEC_SUPPORT_F77=$CCASPEC_SUPPORT_F77"
+echo "CCASPEC_SUPPORT_F77_31=$CCASPEC_SUPPORT_F77_31"
+echo "CCASPEC_SUPPORT_JAVA=$CCASPEC_SUPPORT_JAVA"
+echo "CCASPEC_SUPPORT_STATIC=$CCASPEC_SUPPORT_STATIC"
+echo "CCASPEC_SUPPORT_SHARED=$CCASPEC_SUPPORT_SHARED"
+echo "HAVE_XML2 is $HAVE_XML2"
+echo "BUILD_PYTHON is $BUILD_PYTHON"
+],[
+prefix=$prefix
+CCASPEC_BABEL_VERSION=$CCASPEC_BABEL_VERSION
+CCASPEC_BABEL_BRANCH=$CCASPEC_BABEL_BRANCH
+CCASPEC_SUPPORT_C=$CCASPEC_SUPPORT_C
+CCASPEC_SUPPORT_CXX=$CCASPEC_SUPPORT_CXX
+CCASPEC_SUPPORT_UCXX=$CCASPEC_SUPPORT_UCXX
+CCASPEC_SUPPORT_DCXX=$CCASPEC_SUPPORT_DCXX
+CCASPEC_SUPPORT_F90=$CCASPEC_SUPPORT_F90
+CCASPEC_SUPPORT_F77=$CCASPEC_SUPPORT_F77
+CCASPEC_SUPPORT_F77_31=$CCASPEC_SUPPORT_F77_31
+CCASPEC_SUPPORT_JAVA=$CCASPEC_SUPPORT_JAVA
+CCASPEC_SUPPORT_STATIC=$CCASPEC_SUPPORT_STATIC
+CCASPEC_SUPPORT_SHARED=$CCASPEC_SUPPORT_SHARED
+HAVE_XML2=$HAVE_XML2
+BUILD_PYTHON=$BUILD_PYTHON
+]
+)
+
+AC_OUTPUT

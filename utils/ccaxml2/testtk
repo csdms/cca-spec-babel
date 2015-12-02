@@ -1,0 +1,25 @@
+#!/bin/sh
+GEN=../genccaxml
+GEN=/home/baallan/cca/install/cca-tools-contractor-10-28-08/bin/genccaxml
+OUT="-o cca_depl.xml"
+OUT=
+# flag for extends/implements
+b="--extends"
+# flag for other uses.
+d="--requires"
+# debug flag
+DEBUG="--path-check --no-static --debug"
+DEBUG=
+DEBUG="--debug"
+CLIENTS="--clients=c,cxx,f77,f90,python,java"
+CLIENTS=
+FLAGS="$DEBUG $OUT --prefix=/home/baallan/cca/build/src-mpp2/install $CLIENTS --project=mypkg"
+echo "$GEN interface gov.cca.Port $FLAGS"
+rm -rf testtk.out
+mkdir testtk.out
+cd testtk.out
+$GEN interface mypkg.Y $FLAGS
+$GEN interface mypkg.X $FLAGS
+$GEN interface mypkg.Vector $FLAGS
+$GEN port mypkg.DataPort $d="mypkg.Vector" $FLAGS
+$GEN component mypkg.DataHolder --debug --provides="mypkg.DataPort@source" --provides="gov.cca.ports.BasicParameterPort@config" --language=c $FLAGS --implements-all=mypkg.DataPort --implements-part=mypkg.X,mypkg.Y --delegates=gov.cca.ports.BasicParameterPort@config2 --delegates=gov.cca.ports.BasicParameterPort@config3@my.fa

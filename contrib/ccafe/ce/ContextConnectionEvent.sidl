@@ -1,0 +1,90 @@
+package ccaffeine version 0.3 {
+package ce {
+
+/** 
+    This interface is container-scoped while the ConnectionEvent
+    interface is component-scoped, thus the two are not redundant.
+    Special notes:
+    The ConnectPending means a request with the data
+    available in this interface was made; it does not
+    guarantee that the data is consistent or that the
+    connection process will succeed.
+*/
+interface ContextConnectionEvent  extends ContextEvent
+{
+
+
+  /** Returns the integer standard type for the event. If the
+      event is not one of the standard types, then this returns
+      ContextEventType.NONE. 
+      For ContextConnectionEvent, the type is one of
+      ConnectPending, Connected, DisconnectPending, Disconnected.
+   */
+   ContextEventType getContextEventType() ; 
+
+  /** 
+    Fetch the component generating the event.
+    @returns the componentID of the component generating the event,
+     or null if the container itself generated the event.
+   */
+   gov.cca.ComponentID getContextEventSourceID() ; 
+
+  /** Within a source component, there may be more than one emitter. Key
+      is the self-proclaimed serial number of the emitter, unique
+      within the scope of the result from getSourceID.
+   */
+   int getContextEventSourceKey() ; 
+
+  /** For each source:key pair events are emitted in a monotonically
+      increasing sequence. It is hoped 64 bits is enough to handle
+      long runs.
+   */
+   long getContextEventSequenceNumber() ; 
+
+  /** Annotated, stringified event information.
+      @return an arbitrary string.
+   */
+   string getContextEventDescription() ;
+
+  /** Set or amend the description, as determined by the implementation.
+   */
+   void setContextEventDescription(in string description) ;
+
+  /////// ContextConnectionEvent specific functions
+  /** @return the providing component id. */
+   gov.cca.ComponentID getProvider() ; 
+
+  /** @return the using component id. */
+   gov.cca.ComponentID getUser() ; 
+
+  /** Properties from the provided port, when event is
+      Connected, Disconnected. May return null for 
+      ConnectPending DisconnectPending, when port is not known
+      with certainty to exist.
+      @return the properties of the providing port.
+  */
+  gov.cca.TypeMap getProviderPortProperties() ;
+
+  /** Properties from the using port, when event is
+      Connected, Disconnected. May return null for 
+      ConnectPending DisconnectPending, when port is not known
+      with certainty to exist.
+      @return the properties of the using port.
+   */
+  gov.cca.TypeMap getUserPortProperties() ;
+
+  /** Provider port instance.
+      @return provider port name.
+   */
+   string getProviderPortName() ; 
+  
+  /** User port instance.
+      @return user port name.
+   */
+   string getUserPortName() ; 
+  
+}  // end interface ContextConnectionEvent
+
+} // end package ce
+} // end package ccaffeine
+

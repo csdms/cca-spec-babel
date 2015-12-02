@@ -1,0 +1,48 @@
+#!/bin/sh
+OUT=cca_depl.xml
+GEN=/home/baallan/cca/install/csb-108tp/bin/genccaxml
+# flag for extends/implements
+b="--base-symbols"
+# flag for other uses.
+d="--requires"
+# debug flag
+DEBUG="--debug"
+DEBUG=
+DEBUG="--path-check --no-static --debug"
+FLAGS="$DEBUG -o $OUT --sidl=$HOME/cca/build/src-mpp2/install/share/cca-spec-babel-0_8_2-babel-1.0.4/cca.sidl --prefix=/home/baallan/cca/build/src-mpp2/install --basename=cca_0_8_2_b_1.0.4 --clients=c,cxx,f77,f90,python"
+langs="c cxx f77 f90"
+for i in $langs; do
+FLAGS="$FLAGS --include-$i=%prefix%/include/$i"
+done
+echo "$GEN interface gov.cca.Port $FLAGS"
+rm -f $OUT
+$GEN interface gov.cca.Port $FLAGS
+$GEN interface gov.cca.Services $FLAGS \
+	$d="gov.cca.TypeMap,gov.cca.Port,gov.cca.ComponentID"
+$GEN interface gov.cca.Component $FLAGS \
+	$d=gov.cca.Services
+$GEN interface gov.cca.ComponentRelease $FLAGS \
+	$d=gov.cca.Services
+$GEN interface gov.cca.ComponentID $FLAGS
+$GEN interface gov.cca.TypeMap $FLAGS
+$GEN interface gov.cca.AbstractFramework $FLAGS \
+	$d="gov.cca.Services,gov.cca.TypeMap"
+$GEN interface gov.cca.ConnectionID $FLAGS \
+	$d=gov.cca.ComponentID
+$GEN interface gov.cca.ComponentClassDescription $FLAGS
+$GEN port gov.cca.ports.GoPort $FLAGS \
+$GEN port gov.cca.ports.BuilderService $FLAGS \
+	$d="gov.cca.ComponentID,gov.cca.ConnectionID,gov.cca.TypeMap"
+$GEN port gov.cca.ports.ComponentRepository $FLAGS \
+	$d=gov.cca.ComponentClassDescription
+$GEN port gov.cca.ports.ServiceProvider $FLAGS \
+$GEN port gov.cca.ports.ServiceRegistry $FLAGS \
+	$d=gov.cca.ports.ServiceProvider
+$GEN port gov.cca.ports.BasicParameterPort $FLAGS \
+	$d=gov.cca.TypeMap
+$GEN port gov.cca.ports.ParameterPort $FLAGS \
+	$b=gov.cca.ports.BasicParameterPort 
+$GEN port gov.cca.ports.ParameterPortFactory $FLAGS \
+	$d="gov.cca.ports.ParameterGetListener,gov.cca.ports.ParameterSetListener"
+$GEN interface gov.cca.ports.ParameterGetListener $FLAGS
+$GEN interface gov.cca.ports.ParameterSetListener $FLAGS

@@ -1,0 +1,82 @@
+Building CCA Applications- Feeding the linker:
+(A CCA repository service for local binary applications)
+
+- What exists today
+
+Babel works based on SIDL_DLL_PATH. 
+Ccaffeine works based on CCA_COMPONENT_PATH.
+
+Both accept path elements which are either
+specific filenames or names of directories to be searched.
+
+SIDL symbols are resolved by searching through the files
+and directories of these paths for .scl or .cca files
+which describe the deployment of a compiled SIDL object.
+
+A deployment is the final compiled and installed binary
+and headers describing it.
+
+- What is needed
+
+Resolving a SIDL symbol for application generation and linking means 
+at least finding the symbol with its client and server 
+libraries and header information. 
+For CCA-enabled applications, we also need information about what ports
+the component provides and uses.
+
+The file and path search mechanism allows the application configurer to:
+
+1) Simply name the sidl symbol they want and leave the rest to the computer
+once they have defined the search path. For typical integrated toolkit
+configurations, the search path is defined by convention ($prefix/share/cca)
+instead of requiring human setup.
+
+2) Switch at link time among multiple builds of the same symbol, which
+may have different debugging, optimization, profiling, and other hard-coded 
+configuration options.
+
+In order to build a complete application, the SIDL symbols on which
+a given component depends must be resolved (this is a recursive task). 
+
+- How to achieve it scalably (minimize the input requirements on component 
+creators and users):
+
+To avoid an unmanageable factorial explosion of (redundant) 
+symbol dependency information, each symbol description file
+should give only a list of that symbol's direct symbol dependencies. 
+The path mechanism can then be used by the machine to recursively assemble
+the entire list of required libraries, include directories or other 
+information needed to build the complete application.
+This is the approach that libtool and java use.
+
+We must retrieve the following info items about installed
+interfaces and components in .cca files to manage assembly 
+of quality applications:
+
+1. SIDL symbol name
+2. Kind of sidl object (interface, class, enum).
+3. Universal id of deployment instance.
+4. Location of SIDL definition of the symbol.
+5. Location of installed server libraries and headers, if a class.
+6. Location of each installed client-language library and headers.
+7. List of sidl symbol dependencies to be resolved before this symbol
+can be used correctly.
+8. List of ports provided and used, if a component.
+
+And we must have an indexing service that will tools to query
+the defined path to discover symbols, compute dependency lists,
+and return the needed information for use in scripts that
+do application assembly.
+
+- What's missing:
+
+The above does not consider the additional information needed
+to access remote, already running or to be launched, components
+which exist as separate processes. This is because any
+such component must ultimately have a local binary representation
+(client-side) which can be represented in the above scheme.
+(The path search mechanism allows for URIs as path elements).
+Additional information about launching remote components can be easily
+added to the items listed. We should be able to recycle the prior art
+from Web Services or Grid communities (xcat? scijump?) when our 
+applications reach that level of sophistication.

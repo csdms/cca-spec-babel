@@ -1,0 +1,89 @@
+#!/usr/bin/env python
+import os, sys
+import os.path
+import distutils.sysconfig
+
+from optparse import OptionParser
+
+# FIX BOCCA PATH. We end up doing this in every python script. maintenance hassle.
+#
+genccaxml_self = os.path.realpath(sys.argv[0])
+genccaxml_tools_bin = os.path.dirname(genccaxml_self)
+prefix=os.path.dirname(genccaxml_tools_bin)
+libdirname = distutils.sysconfig.get_config_var('LIB')
+if libdirname is None: libdirname = 'lib' # for python versions < 2.5
+
+thedir = os.path.join(genccaxml_tools_bin, '..', libdirname, 
+                      'python' + distutils.sysconfig.get_python_version(), 
+                      'site-packages')
+newdir=''
+
+if not os.path.exists(thedir):
+    files = []
+    # Look for the parent of site-packages
+    for file in os.listdir(prefix):
+        fulldir = os.path.join(prefix, file)
+        if os.path.isdir(fulldir):
+            for x in os.listdir(fulldir):
+                if os.path.isdir(os.path.join(fulldir,x)):
+                    if x.startswith('python' + distutils.sysconfig.get_python_version()):
+                        fulldir = os.path.join(fulldir, x)
+                    elif x == 'python': 
+                        fulldir = os.path.join(fulldir, x)
+                    else: continue
+                    for y in os.listdir(fulldir):
+                        if y == 'site-packages':
+                            newdir =  os.path.join(fulldir, 'site-packages')
+                            break 
+        if newdir: 
+            thedir = newdir
+            break
+try:
+    genccaxmllibPath = os.path.abspath(thedir)
+    sys.path.append(genccaxmllibPath)
+except:
+    print 'genccaxml: Cannot locate ccaxml2 module path.'
+    exit(1)
+
+# print >> sys.stderr, "python path is:"
+# print >> sys.stderr, sys.path
+
+
+from ccaxml2 import CCAXMLEntity
+
+usage="""
+Create XML deployment file for a SIDL or CCA entity.
+Example:
+  %prog component mypkg.mycomponent --prefix=$HOME/work/install/mypkg
+Usage:
+  %prog <kind_or_change> <sidlname> [options]
+  where kind is one of: class,interface,component,port
+"""
+
+if __name__ == '__main__':
+    parser = OptionParser(usage=usage)
+    CCAXMLEntity.initParser(parser)
+    (options, args) = parser.parse_args()
+    if len(args) < 2:
+        # parser.print_help()
+        print "got argv", sys.argv
+        print "yielded args", args
+        print "expected KIND sidlname ; see genccaxml --help for more options"
+        sys.exit(1)
+
+    kind = args[0]
+    symbol = args[1]
+    
+    if not kind or not kind.lower() in ["class", "interface", "port", "component","change"]:
+        parser.print_help()
+        sys.exit(1)
+
+    if len(symbol) < 3 or not "." in symbol:
+        parser.print_help()
+        print "SIDL symbol requested appears to be invalid:", symbol
+        sys.exit(1)
+
+    x = CCAXMLEntity.CCAXMLEntity(kind, symbol, options)
+    x.write()
+
+    sys.exit(0)

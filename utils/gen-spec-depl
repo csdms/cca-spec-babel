@@ -1,0 +1,161 @@
+#!/bin/sh
+# generate cca_depl.xml describing the installation of cca binding libraries and sidl. it must be updated if: cca spec changes or babel adds bindings.
+#
+# Required args (no guessing-- that's for configure and make):
+# IF more args are added, destdir is always last as it is the only one 
+# that may be empty string.)
+PYTHON=$1
+BABELCONFIG=$2
+PREFIX=$3
+LIBBASE=$4
+SIDLDIR=$5
+DEPLDIR=$6
+DESTDIR=$7
+if ! test -x $PYTHON; then
+	echo bogus python given: $PYTHON
+	exit 1
+fi
+if ! test -x $BABELCONFIG; then
+	echo bogus babel-config given: $BABELCONFIG
+	exit 1
+fi
+if test "x$PREFIX" = "x"; then
+	echo empty prefix given
+	exit 1
+fi
+if test "x$LIBBASE" = "x"; then
+	echo empty libbase given
+	exit 1
+fi
+if test "x$SIDLDIR" = "x"; then
+	echo empty spec sidldir given
+	exit 1
+fi
+if test "x$DEPLDIR" = "x"; then
+	echo empty depl xml dir given
+	exit 1
+fi
+
+# leaf name of our target
+OUT=cca_depl.xml
+DOUT=$DESTDIR/$DEPLDIR
+FOUT=$DESTDIR/$DEPLDIR/$OUT
+
+if ! test -d $DOUT; then
+	echo create $DOUT before running this script.
+	exit 1
+fi
+# full path of our executable
+GEN=$DESTDIR/$PREFIX/bin/genccaxml
+# values for support of clients, linkage types
+. ../src/CCA_Babel_Vars.sh
+
+# options for generator genccaxml
+# may need a temporary workaround pythonpath set here for destdir installs.
+
+# flag for extends/implements
+b="--extends"
+
+# flag for other uses.
+d="--requires"
+
+# debug flag for xml generator
+DEBUG="--debug"
+DEBUG=
+
+if test "x$DESTDIR" = "x"; then
+	DEBUG="--path-check $DEBUG"
+fi
+if test $CCASPEC_SUPPORT_SHARED = 0; then
+	DEBUG="--no-shared $DEBUG"
+fi
+if test $CCASPEC_SUPPORT_STATIC = 0; then
+	DEBUG="--no-static $DEBUG"
+fi
+
+langs="c"
+
+if test "x$CCASPEC_SUPPORT_F90" = "x1"; then
+	langs="$langs f90"
+fi
+if test "x$CCASPEC_SUPPORT_F77" = "x1"; then
+	langs="$langs f77"
+fi
+if test "x$CCASPEC_SUPPORT_CXX" = "x1"; then
+	langs="$langs cxx"
+fi
+if test "x$CCASPEC_SUPPORT_JAVA" = "x1"; then
+	langs="$langs java"
+fi
+if test "x$CCASPEC_SUPPORT_PYTHON" = "x1"; then
+	langs="$langs python"
+fi
+clients=`echo $langs|sed -e 's/ /,/g'`
+
+FLAGS="$DEBUG -o $FOUT --with-babel-config=$BABELCONFIG --sidl=$SIDLDIR/cca.sidl --prefix=$PREFIX --basename=$LIBBASE --clients=$clients"
+
+for i in $langs; do
+	case $i in
+	java) ;;
+	python) ;;
+	*) FLAGS="$FLAGS --include-$i=%prefix%/include/$i"
+		;;
+	esac
+done
+
+
+if test -f $FOUT; then
+	echo "removing old $FOUT"
+	rm -f $FOUT
+fi
+
+# The rest of the below can/should be determined by parsing cca.sidl
+# rather than recoding the same dependency info here. needs a simple
+# py sidl parser to do that, however. the FLAGS value is good for
+# all the entities and cannot be determined by parsing sidl.
+
+echo "$GEN interface gov.cca.Port $FLAGS"
+$GEN interface gov.cca.Port $FLAGS
+$GEN interface gov.cca.Exception $FLAGS
+$GEN interface gov.cca.TypeMismatchException $b=gov.cca.Exception $FLAGS
+$GEN interface gov.cca.Services $FLAGS \
+	$d="gov.cca.TypeMap,gov.cca.Port,gov.cca.ComponentID" \
+	$d="gov.cca.Exception"
+$GEN interface gov.cca.Component $FLAGS \
+	$d=gov.cca.Services \
+	$d="gov.cca.Exception"
+$GEN interface gov.cca.ComponentRelease $FLAGS \
+	$d=gov.cca.Services \
+	$d="gov.cca.Exception"
+$GEN interface gov.cca.ComponentID $FLAGS
+$GEN interface gov.cca.TypeMap $FLAGS \
+	$d="gov.cca.Exception"
+$GEN interface gov.cca.AbstractFramework $FLAGS \
+	$d="gov.cca.Services,gov.cca.TypeMap" \
+	$d="gov.cca.Exception"
+$GEN interface gov.cca.ConnectionID $FLAGS \
+	$d=gov.cca.ComponentID
+$GEN interface gov.cca.ComponentClassDescription $FLAGS
+$GEN port gov.cca.ports.GoPort $FLAGS
+$GEN port gov.cca.ports.BuilderService $FLAGS \
+	$d="gov.cca.ComponentID,gov.cca.ConnectionID,gov.cca.TypeMap" \
+	$d="gov.cca.Exception"
+$GEN port gov.cca.ports.ComponentRepository $FLAGS \
+	$d=gov.cca.ComponentClassDescription
+$GEN port gov.cca.ports.ServiceProvider $FLAGS \
+	$d="gov.cca.Exception"
+$GEN port gov.cca.ports.ServiceRegistry $FLAGS \
+	$d=gov.cca.ports.ServiceProvider \
+	$d="gov.cca.Exception"
+$GEN port gov.cca.ports.BasicParameterPort $FLAGS \
+	$d=gov.cca.TypeMap \
+	$d="gov.cca.Exception"
+$GEN port gov.cca.ports.ParameterPort $FLAGS \
+	$b=gov.cca.ports.BasicParameterPort \
+	$d="gov.cca.Exception"
+$GEN port gov.cca.ports.ParameterPortFactory $FLAGS \
+	$d="gov.cca.ports.ParameterGetListener,gov.cca.ports.ParameterSetListener"
+$GEN interface gov.cca.ports.ParameterGetListener $FLAGS $d="gov.cca.Exception"
+$GEN interface gov.cca.ports.ParameterSetListener $FLAGS $d="gov.cca.Exception"
+
+chmod 444 $FOUT

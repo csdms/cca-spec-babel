@@ -1,0 +1,165 @@
+import ccaffeine.ce;
+/* in this file, the context event types are imported to save a ton of typing.  */
+package ccaffeine version 0.3 {
+package ports {
+
+/** A callback service to alert a component when peer component
+    activities within CCA purview occur.
+    This service is to be 
+    immediately available during a setServices call. This service 
+    interface is compatible with a direct-connected or proxy framework.
+    After signing up, the subscriber will receive all container event
+    notices. A filtering version of this interface is possible, but
+    simply an ergonomic issue.
+*/
+interface ContextEventSubscriberService  extends gov.cca.Port
+{
+
+
+  ///////////////////////////////////////////////////////////////
+  //// The listener callback registration functions.
+  //// This is all most app-framework components will need.
+  ///////////////////////////////////////////////////////////////
+
+  /** Sign up to be told about events matching ceType.
+      For those who wish to receive specific events that require no
+      casting to dig out the information, see the other addXXXXEventListener
+      functions in this interface.
+      @param l  an object (this component or its delegate) that listens
+             by implementing the ContextEventListener callback.
+      @param ceType ALL will cause all valid event types to be received,
+             and any other type will cause that other to be received.
+             Events will be delivered in generic form and the recipient
+             may need to cast if they want more specific information.
+   */
+   void addContextEventListener(in ContextEventListener l, in ContextEventType ceType) ; 
+
+  /** Ignore future Events.
+      Removing a non-added listener is not an error. 
+      @param l a previously added listener interface.
+      @param ceType the same type that was given for addContextEventListener, usually.
+             If you want to subscribe to all but one events for example, you could
+             subscribe to ALL and then remove yourself from one type.
+   */
+   void removeContextEventListener(in ContextEventListener l, in ContextEventType ceType) ; 
+
+
+  /** Sign up to be told about events.
+      @param l an object (this component or its delegate) that listens
+           by implementing the ComponentFactoryEventListener callback.
+  */
+   void addComponentFactoryEventListener(in /*CE*/ ComponentFactoryEventListener l) ;
+
+  /** Sign up to be told about events.
+      @param l an object (this component or its delegate) that listens
+           by implementing the ComponentInstanceAddRequestEventListener callback.
+  */
+   void addComponentInstanceAddRequestEventListener(in /*CE*/ ComponentInstanceAddRequestEventListener l) ;
+
+  /** Sign up to be told about events.
+      @param l an object (this component or its delegate) that listens
+           by implementing the ComponentInstanceAddedEventListener callback.
+  */
+   void addComponentInstanceAddedEventListener(in /*CE*/ ComponentInstanceAddedEventListener l) ;
+
+  /** Sign up to be told about events.
+      @param l an object (this component or its delegate) that listens
+           by implementing the ComponentInstanceDeleteRequestEventListener callback.
+  */
+   void addComponentInstanceDeleteRequestEventListener(in /*CE*/ ComponentInstanceDeleteRequestEventListener l) ;
+
+  /** Sign up to be told about events.
+      @param l an object (this component or its delegate) that listens
+           by implementing the ComponentInstanceDeletedEventListener callback.
+  */
+   void addComponentInstanceDeletedEventListener(in /*CE*/ ComponentInstanceDeletedEventListener l) ;
+
+  /** Sign up to be told about events.
+      @param l an object (this component or its delegate) that listens
+           by implementing the ContextConnectionEventListener callback.
+  */
+   void addContextConnectionEventListener(in /*CE*/ ContextConnectionEventListener l) ;
+
+  /** Sign up to be told about events.
+      @param l an object (this component or its delegate) that listens
+           by implementing the PortActivityEventListener callback.
+  */
+   void addPortActivityEventListener(in /*CE*/ PortActivityEventListener l) ;
+
+  /** Sign up to be told about events.
+      @param l an object (this component or its delegate) that listens
+           by implementing the PortDefinitionEventListener callback.
+  */
+   void addPortDefinitionEventListener(in /*CE*/ PortDefinitionEventListener l) ;
+
+  /** Ignore future Events.
+      Removing a non-added listener is not an error.
+      @param l a previously added ComponentFactoryEventListener listener interface.
+   */
+   void removeComponentFactoryEventListener(in /*CE*/ ComponentFactoryEventListener l) ;
+
+  /** Ignore future Events.
+      Removing a non-added listener is not an error.
+      @param l a previously added ComponentInstanceAddRequestEventListener listener interface.
+   */
+   void removeComponentInstanceAddRequestEventListener(in /*CE*/ ComponentInstanceAddRequestEventListener l) ;
+
+  /** Ignore future Events.
+      Removing a non-added listener is not an error.
+      @param l a previously added ComponentInstanceAddedEventListener listener interface.
+   */
+   void removeComponentInstanceAddedEventListener(in /*CE*/ ComponentInstanceAddedEventListener l) ;
+
+  /** Ignore future Events.
+      Removing a non-added listener is not an error.
+      @param l a previously added ComponentInstanceDeleteRequestEventListener listener interface.
+   */
+   void removeComponentInstanceDeleteRequestEventListener(in /*CE*/ ComponentInstanceDeleteRequestEventListener l) ;
+
+  /** Ignore future Events.
+      Removing a non-added listener is not an error.
+      @param l a previously added ComponentInstanceDeletedEventListener listener interface.
+   */
+   void removeComponentInstanceDeletedEventListener(in /*CE*/ ComponentInstanceDeletedEventListener l) ;
+
+  /** Ignore future Events.
+      Removing a non-added listener is not an error.
+      @param l a previously added ContextConnectionEventListener listener interface.
+   */
+   void removeContextConnectionEventListener(in /*CE*/ ContextConnectionEventListener l) ;
+
+  /** Ignore future Events.
+      Removing a non-added listener is not an error.
+      @param l a previously added PortActivityEventListener listener interface.
+   */
+   void removePortActivityEventListener(in /*CE*/ PortActivityEventListener l) ;
+
+  /** Ignore future Events.
+      Removing a non-added listener is not an error.
+      @param l a previously added PortDefinitionEventListener listener interface.
+   */
+   void removePortDefinitionEventListener(in /*CE*/ PortDefinitionEventListener l) ;
+
+  ///////////////////////////////////////////////////////////////
+  //// The enum  to string and back mapping functions, 
+  //// useful principally in generating UI strings.
+  ///////////////////////////////////////////////////////////////
+
+  /** Mapping function converting to standard string from the enumeration.
+     The string result is identical to the enumerated names
+     for events defined in this interface. E.g. FactoryClosed
+     maps to  "FactoryClosed". Case is not significant but
+     is provided for readability. 
+  */
+   string getStringFromEnum(in ContextEventType ceType) ; 
+
+  /** Mapping function converting to standard int from a string.
+      This function is *not* case sensitive, as we don't want
+      standard events to be missed simply because of -key typos.
+   */
+   ContextEventType getEnumFromString(in string typeString) ; 
+
+}  // end interface ContextEventSubscriberService
+
+} // end package ports
+} // end package ccaffeine

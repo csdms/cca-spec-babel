@@ -1,0 +1,76 @@
+package ccaffeine version 0.3 {
+
+/** A context (frame) is a scope with components, ports, and connections, and
+the interfaces in this package describe a call-back based event model
+with (in some cases) synchronous requirements.
+*/
+
+package ce {
+
+/** Container event data mechanism. All the data accesible
+    through this interface is relative to (interpretable only
+    in the context of) the container in which the event belongs.
+    The methods are named with ContextEvent
+    so that implementors choosing to roll ContextEvent,
+    ConnectionEvent, and generic string events ala Indiana
+    into a single implementation
+    will not have method naming conflicts.
+    This interface is container-scoped while the ConnectionEvent
+    interface is component-scoped, thus the two are not redundant.
+*/
+interface ContextEvent 
+{
+
+
+  /** Returns the integer standard type for the event. If the
+      event is not one of the standard types, then this returns
+      ContextEventType.NONE. 
+   */
+   ContextEventType getContextEventType() ; 
+
+  /** 
+    Fetch the component generating the event.
+    @returns the componentID of the component generating the event,
+     or null if the container itself generated the event.
+   */
+   gov.cca.ComponentID getContextEventSourceID() ; 
+
+  /** Within a source component, there may be more than one emitter. Key
+      is the self-proclaimed serial number of the emitter, unique
+      within the scope of the result from getSourceID.
+   */
+   int getContextEventSourceKey() ; 
+
+  /** For each source:key pair events are emitted in a monotonically
+      increasing sequence. It is hoped 64 bits is enough to handle
+      long runs.
+   */
+   long getContextEventSequenceNumber() ; 
+
+  /** 
+      The following additional info, if present, may make the event
+      interpretable in the scope of the outermost framework. This
+      is handy mainly as that's where the interactive user interface 
+      will reside. 
+<pre>
+      containerFullyQualifiedInstanceName,
+      componentFullyQualifiedInstanceName,
+      callerComponentFullyQualifiedInstanceName,
+      calleeComponentFullyQualifiedInstanceName,
+</pre>
+      These and others can be included in the string description.
+      However, the sub-class of the event is what can be guaranteed
+      machine interpretable. In some frameworks this function may
+      return an XML or other SGML-style string.
+   */
+   string getContextEventDescription() ; 
+
+  /** Set or amend the description, as determined by the implementation.
+   */
+   void setContextEventDescription(in string description) ;
+
+}  // end interface ContextEvent
+
+} // end package ce
+} // end package ccaffeine
+

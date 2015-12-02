@@ -1,0 +1,211 @@
+#!@SHELL@
+shlibSuffix="@SHLIB_SUFFIX@"
+libtool=@CCASPEC_BABEL_BABEL_LIBTOOL@
+supportShared=@CCASPEC_SUPPORT_SHARED@
+supportStatic=@CCASPEC_SUPPORT_STATIC@
+usage () {
+ 	echo "$0: usage: <mode> <libpath> <babelClassName[:desc]> <palette-alias> [dynamic <scope> <resolution>] [headers <incpath> <incfiles>]" > /dev/stderr
+	echo "This script generates to stdout .scl or .cca files which are installed next to the" > /dev/stderr
+	echo "library in the same directory under some name xxxxxx.depl.cca. or libpath.scl." > /dev/stderr
+	echo "The script creates scl and cca info in cca mode or just babel info in scl mode." > /dev/stderr
+	echo " Arguments: mode is cca or scl." > /dev/stderr
+	echo "            libpath is the full path of the .la, .o, $shlibSuffix, or .a file" > /dev/stderr
+	echo "            babelClassName is the full dot-qualified babel.class.name of the component." > /dev/stderr
+	echo "            desc, if given, is the language type of the component ['ior/impl' default]." > /dev/stderr
+	echo "            palette-alias is the string name to be used in the user interface" > /dev/stderr
+	echo " Optional arguments (if library is dynamically loadable)" > /dev/stderr
+	echo "            dynamic -- required literal. just put it there." > /dev/stderr
+	echo "            scope is global or private" > /dev/stderr
+	echo "            resolution is now or lazy" > /dev/stderr
+	echo " If optional dynamic argument is not given, static is assumed." > /dev/stderr
+	echo " Optional arguments (if compiling drivers is to be supported)" > /dev/stderr
+	echo "            headers -- required literal. just put it there." > /dev/stderr
+	echo "            path is a : separated include directory list." > /dev/stderr
+	echo "            files is a : separated include file list, less suffixes." > /dev/stderr
+	echo "e.g.: $0 scl /somewhere/lib/libComponent3.a test3.Component1 Comp3" > /dev/stderr
+	echo "e.g.: $0 cca /somewhere/lib/libComponent2.so test2.Component1:java Comp2 dynamic global lazy" > /dev/stderr
+	echo "e.g.: $0 scl /somewhere/lib/libComponent1.la test1.Component1 Comp1 dynamic private now" > /dev/stderr
+	echo "e.g.: $0 cca /somewhere/lib/libComponent0.la test0.Component1 test0.Component1" > /dev/stderr
+	echo "e.g.: $0 cca /somewhere/lib/libComponent0.la test0.Component1 test0.Component1 headers /somewhere/include test0_Component1" > /dev/stderr
+}
+if test $# -lt 4; then
+	usage
+	exit 1;
+fi
+dstring=`date`
+pstring=`pwd`/
+mode=$1
+shift
+libpath=$1
+shift
+
+# if it's an la file, set libpath_lt, libpath_static
+# else don't.
+libpath_lt=""
+libpath_static=""
+libpath_shared=""
+libpath_base=`echo $libpath |sed -e 's/\.la$//g'`
+if test "x$libpath" = "x$libpath_base"; then
+  libpath_lt=""
+  libpath_base=`echo $libpath |sed -e 's/\.a$//g'`
+  if test "x$libpath" = "x$libpath_base"; then
+    :
+  else
+    libpath_static="$libpath"
+  fi
+  libpath_base=`echo $libpath |sed -e "s/$shlibSuffix$//g"`
+  if test "x$libpath" = "x$libpath_base"; then
+    :
+  else
+    libpath_shared="$libpath"
+  fi
+else
+  libpath_lt="$libpath"
+  # make an assumption that probably always works for cca.
+  if test "x$supportStatic" = "x1" ; then
+    libpath_static="$libpath_base.a"
+  fi
+  if test "x$supportShared" = "x1" ; then
+    libpath_shared="$libpath_base$shlibSuffix"
+  fi
+fi
+
+className=`echo $1 | sed -e 's/:.*//g'`
+if test "x$className" = "x$1"; then
+sclDesc="ior/impl"
+else
+sclDesc=`echo $1 | sed -e 's/^[^:]*://g'`
+fi
+shift
+
+palias="paletteClassAlias=\"$1\""
+shift
+scope=global
+resolution=now
+dynamic=static
+incpath=
+incfiles=
+if test "x$1" = "xstatic"; then
+  echo "$0: static is not a supported word, it is the default" > /dev/stderr
+  exit 1;
+fi 
+if test $# -ge 3; then
+  if test "x$1" = "xdynamic"; then
+    dynamic=dynamic
+    if test $# -ge 2; then
+	scope=$2
+        shift
+    fi
+    if test $# -ge 2; then
+	resolution=$2
+	dynamic=dynamic
+	shift
+    fi
+    shift
+  fi
+fi
+if test $# -ge 3; then
+  if test "x$1" = "xheaders"; then
+    if test $# -ge 2; then
+	incpath=$2
+        shift
+    fi
+    if test $# -ge 2; then
+	incfiles=$2
+        shift
+    fi
+    shift
+  fi
+fi
+if test $# -ge 2; then
+  if test "x$1" = "xdynamic"; then
+    echo "$0: dynamic and its modifiers must appear before headers" > /dev/stderr
+    exit 1;
+  else
+    echo "$0: extra or missing arguments starting at $1." > /dev/stderr
+    exit 1;
+  fi 
+fi
+
+staticinfo=""
+if ! test "x$libpath_static" = "x"; then
+  staticinfo="static-archive=\"$libpath_static\""
+fi
+libtoolinfo=""
+if ! test "x$libpath_lt" = "x"; then
+  libtoolinfo="libtool-archive=\"$libpath_lt\""
+fi
+sharedinfo=""
+if ! test "x$libpath_shared" = "x"; then
+  sharedinfo="shared-archive=\"$libpath_shared\""
+fi
+if test "x$GENDEBUG_ERROR" = "x1"; then
+echo $mode
+echo $libpath
+echo $libpath_lt
+echo $libpath_static
+echo $className
+echo $palias
+echo $dynamic
+echo $scope
+echo $resolution
+echo $incpath
+echo $incfiles
+fi
+
+if test "x$mode" = "xscl"; then
+cat << __EOF1
+<?xml version="1.0"?> 
+<!-- # generated scl index. -->
+<!-- date=$dstring -->
+<!-- builder=$USER@$HOST -->
+<!-- $0 $* -->
+<scl>
+  <library uri="$libpath" 
+	scope="$scope" 
+	resolution="$resolution" > 
+    <class name="$className" desc="$sclDesc" />
+  </library>
+</scl>
+__EOF1
+exit 0
+fi
+
+if test "x$mode" = "xcca"; then
+cat << __EOF2
+<?xml version="1.0"?> 
+<libInfo>
+<!-- # generated component index. -->
+<!-- date=$dstring -->
+<!-- builder=$USER@$HOST -->
+<!-- $0 $* -->
+<scl>
+  <library uri="$libpath" 
+	scope="$scope" 
+	resolution="$resolution" > 
+    <class name="$className" desc="$sclDesc" />
+  </library>
+</scl>
+<componentDeployment 
+  name="$className"
+  $palias
+>
+    <environment> 
+        <ccaSpec binding="babel" /> 
+        <library loading="$dynamic" 
+                 name="$libpath" 
+                 $libtoolinfo 
+                 $sharedinfo 
+                 $staticinfo 
+        />
+	<headers path="$incpath" files="$incfiles" />
+    </environment>
+</componentDeployment>
+</libInfo>
+__EOF2
+exit 0
+fi
+
+echo "$0: Unrecognized mode" > /dev/stderr
+usage
+exit 1

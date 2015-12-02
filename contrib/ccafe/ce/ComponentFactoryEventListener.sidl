@@ -1,0 +1,15 @@
+package ccaffeine version 0.3 {
+package ce {
+/** This is the interface that a component must implement
+    in order to be notified specifically of ComponentFactory Events. 
+*/
+interface ComponentFactoryEventListener 
+{
+
+  /** Called on listeners when an event occurs. */
+   void doComponentFactory(in ComponentFactoryEvent event) ; 
+
+}  // end interface ComponentFactoryEventListener
+
+} // end package ce
+} // end package ccaffeine

@@ -1,0 +1,36 @@
+/*
+ * File to define some flags and macros for dealing with variations
+ * in babel/sidl generated code.
+ *
+ * ben allan, SNL/CA, Apr 4 2003
+ */
+
+/* dot-noted babel version used for cca-spec-babel */
+#define CCASPEC_HAVE_BABEL @CCASPEC_BABEL_VERSION@
+
+/* #define HAVE_BABEL_MAJOR_x */
+@DEFINE_BABEL_HAVE_MAJOR@
+
+/* #define HAVE_BABEL_MINOR_x_y */
+@DEFINE_BABEL_HAVE_MINOR@
+
+/* #define HAVE_BABEL_PATCH_x_y_z */
+@DEFINE_BABEL_HAVE_PATCH@
+
+/* sidl base exception member function names for version above */
+@DEFINE_SIDL_EXCEPTION_getMessage@
+@DEFINE_SIDL_EXCEPTION_setMessage@
+@DEFINE_SIDL_EXCEPTION_getTrace@
+@DEFINE_SIDL_EXCEPTION_addToStackTrace@
+@DEFINE_SIDL_EXCEPTION_addToTrace@
+
+/* rendering of type array<long> from sidl to c++.
+ * sometimes a template on long, int64_t or whatever else.
+ * this is useful in making sure the type created inside an
+ * impl body is the same that babel will paste on the
+ * outside through the generator.
+ */ 
+@DEFINE_SIDL_LONG_ARRAY1_TYPE@
+@DEFINE_SIDL_LONG_ARRAY1_PRIMITIVE@
+/* and in some cases, array, scalar are not consistent. */
+@DEFINE_SIDL_LONG_TYPE@

@@ -1,0 +1,65 @@
+
+package ccaffeine version 0.3 {
+
+package ports {
+/**
+ * This is related to, but not the same as, ComponentFactory,
+ * mainly because only a framework is likely to implement
+ * the functions here. This interface will always be paired
+ * with at least one ComponentFactory to be useful.
+ */ 
+interface Loader extends gov.cca.Port
+{
+
+  /** Replace current path with new paths. each vector element is one
+   * directory name. Path is searched for .cca elements. To append or
+   * prepend the path: get the path, adjust the array, and set the path.
+   * If a particular operating system requires modification to external
+   * library path environment variables, that remains not our responsibility
+   * here.
+   */
+  void setComponentPath(in array<string> paths);
+
+  /** @return the list of directories searched for .cca files. */
+  array< string > getComponentPath();
+
+  /** Parse a file for component descriptions and add them
+   * to some internal repository list. This does *not* mean
+   * that the component classes described are loaded.
+   */
+  void loadComponentDescription(in string uri);
+
+  /**
+   * Generate an index (populate the component repository) based on 
+   * current component path value and a search for .cca files in that path.
+   */
+  void indexComponentPath( );
+
+  /**
+   * Cause the named class to become instantiable by a subsequent
+   * call to createComponentInstance(). This may require side effects
+   * with dlopen.
+   *   In dlopen terms, lazy=true -> RTLD_LAZY, false->RTLD_NOW;
+   *                  globalTable=true ->RTLD_GLOBAL, false->RTLD_LOCAL.
+   * @param name this is either the palette class alias or the babel
+   * @param globalTable rtld_global to use.
+   * @param lazy rtld_lazy to use.
+   * class name. If there is a conflict, the palette class alias wins.
+   */
+  void loadComponent( in string name , in bool globalTable, in bool lazy);
+
+  /**
+   * Cause the named port interface library to be dynamically loaded.
+   * The librar will be loaded globally, as interfaces
+   * between components must be globally defined.
+   * This is particularly relevant to C++ implementations and may not 
+   * mean anything for other languages.
+   * @return 0 if loaded, nonzero if some problem detected.
+   */
+  int loadPortLibrary( in string libraryPath);
+
+} // end loader port
+
+} // end ports package
+
+} // end ccaffeine package

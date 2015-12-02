@@ -1,0 +1,290 @@
+# Make sure CCAFE_CONFIG is set to the location of the ccafe-config
+# executable, specifying the full path name if needed.
+
+# --------------- Do not modify below this line -----------------
+
+CLIENT_TOP_DIR= @PWD@
+CLIENT_NAME   = @CLIENT_NAME@
+LANGUAGE      = @LANGUAGE@
+CCA_SPEC_VARS = @CCA_SPEC_VARS@
+
+# Configure vars:
+PKG_NAME      = @CCASPEC_PKG_NAME@
+VER_SUFFIX    = @CCASPEC_VER_SUFFIX@
+prefix 	      = @prefix@
+INSTALL       = @INSTALL@
+RANLIB        = @RANLIB@
+SHLIB_SUFFIX  = @SHLIB_SUFFIX@
+CCASPEC_LIBTOOL_LIB=@CCASPEC_LIBTOOL_LIB@
+CCASPEC_SHARED_LIB=@CCASPEC_SHARED_LIB@
+CCASPEC_STATIC_LIB=@CCASPEC_STATIC_LIB@
+BUILT_LIBTOOL_LIB=@BUILT_LIBTOOL_LIB@
+BUILT_SHARED_LIB=@BUILT_SHARED_LIB@
+BUILT_STATIC_LIB=@BUILT_STATIC_LIB@
+RPATHDIRSWITCH   = @RPATHDIRSWITCH@
+QUIET_LIBTOOL=@HIDECOMPILE@
+HIDECOMPILE=@HIDECOMPILE@
+HIDELIBTOOL=@HIDELIBTOOL@
+
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
+bindir = @bindir@
+sbindir = @sbindir@
+libexecdir = @libexecdir@
+datadir = @datadir@
+datarootdir = @datarootdir@
+docdir = @datadir@/doc
+sysconfdir = @sysconfdir@
+sharedstatedir = @sharedstatedir@
+localstatedir = @localstatedir@
+libdir = @libdir@
+infodir = @infodir@
+mandir = @mandir@
+includedir = @includedir@
+oldincludedir = /usr/include
+pkgdatadir = @pkgdatadir@
+pkgdocdir = @pkgdocdir@
+pkglibdir = @pkglibdir@
+pkgincludedir = @pkgincludedir@
+transform=@program_transform_name@
+
+
+CCA_SPEC = $(CLIENT_TOP_DIR)
+# Location of CCA spec headers (in include/)  and library (in lib/) files
+CCA_SPEC_CLIENTS = $(CCA_SPEC)/client
+
+include babel.make 	# default for clients
+include $(CCA_SPEC_VARS)
+#include ../MakeIncl.user
+# adjust manually if desired in Makeincl.user
+# QUIET_LIBTOOL=
+# HIDELIBTOOL=
+LIBTOOL= $(CCASPEC_BABEL_BABEL_LIBTOOL)
+LIBTOOL_COMPILEFLAGS=@LIBTOOL_COMPILEFLAGS@
+LIBTOOL_LINKFLAGS=@LIBTOOL_LINKFLAGS@
+LIBTOOL_FINISHFLAGS=@LIBTOOL_FINISHFLAGS@
+
+
+CLIENT_LIB_LONG = lib$(CLIENT_NAME)$(VER_SUFFIX)-$(LANGUAGE).la
+CLIENT_LIB = lib$(CLIENT_NAME)-$(LANGUAGE).la
+
+LDSO=@LDSO@
+LDSOFLAGS=@LDSOFLAGS@
+
+# The following variables extract configuration information from the 
+# installed CCA specification (with Babel support)
+
+CC = $(CCASPEC_BABEL_CC)
+CPP = $(CCASPEC_BABEL_CPP)
+CFLAGS = $(CCASPEC_BABEL_CFLAGS) 
+
+LIBS :=  $(LIBS) \
+	$(RPATHDIRSWITCH)$(CCASPEC_BABEL_libdir) -L$(CCASPEC_BABEL_libdir) -lsidl
+   
+CCASPEC_BABEL_LIBSTUB_LANGUAGE = $(LANGUAGE)
+
+INCLUDES := $(INCLUDES) -I$(CCASPEC_BABEL_includedir)
+
+# Get Source names (use sed to filter out result when no files match)
+CSRC_FILES := $(shell echo *.c | sed -e 's/\*\.c//') 
+
+DOBJS = $(CSRC_FILES:.c=.lo)
+
+# this replace ucxx at 1.0 but not before. placeholder.
+ifeq ($(LANGUAGE),cxx)
+	CXX = $(CCASPEC_BABEL_CXX)
+	CXXFLAGS = $(CCASPEC_BABEL_CXXFLAGS)
+	LIBS := $(LIBS) -lsidlstub_cxx
+   INCLUDES := $(INCLUDES) -I$(CCASPEC_BABEL_includedir)/cxx -I$(CCASPEC_BABEL_includedir)/cxx
+	CXXSRC_FILES := $(shell echo *.cxx | sed -e 's/\*\.cxx//') 
+   DOBJS := $(DOBJS) $(CXXSRC_FILES:.cxx=.lo)
+endif
+
+ifeq ($(LANGUAGE),ucxx)
+	CXX = $(CCASPEC_BABEL_CXX)
+	CXXFLAGS = $(CCASPEC_BABEL_CXXFLAGS)
+	LIBS := $(LIBS) -lsidlstub_ucxx
+   INCLUDES := $(INCLUDES) -I$(CCASPEC_BABEL_includedir)/ucxx -I$(CCASPEC_BABEL_includedir)/cxx
+	CXXSRC_FILES := $(shell echo *.cxx | sed -e 's/\*\.cxx//') 
+   DOBJS := $(DOBJS) $(CXXSRC_FILES:.cxx=.lo)
+endif
+
+ifeq ($(LANGUAGE),dcxx)
+	CXX = $(CCASPEC_BABEL_CXX)
+	CXXFLAGS = $(CCASPEC_BABEL_CXXFLAGS)
+	LIBS := $(LIBS) -lsidlstub_dcxx
+   INCLUDES := $(INCLUDES) -I$(CCASPEC_BABEL_includedir)/dcxx -I$(CCASPEC_BABEL_includedir)/cxx
+	CXXSRC_FILES := $(shell echo *.cc | sed -e 's/\*\.cc//') 
+   DOBJS := $(DOBJS) $(CXXSRC_FILES:.cc=.lo)
+endif
+
+ifeq ($(LANGUAGE),f77)
+	F77 = $(CCASPEC_BABEL_F77)
+	LIBS := $(LIBS) $(CCASPEC_BABEL_FLIBS) -lsidlstub_$(LANGUAGE)
+   INCLUDES := $(INCLUDES) -I$(CCASPEC_BABEL_includedir)/f77 -I$(CCASPEC_BABEL_includedir)/F77 -I. 
+	F77SRC_FILES := $(IMPLSRCS) 
+   DOBJS := $(DOBJS) $(IMPLSRCS:.f=.lo)
+endif
+
+ifeq ($(LANGUAGE),f90)
+	F90 = $(CCASPEC_BABEL_F90)
+	F90FLAGS = $(CCASPEC_BABEL_F90FLAGS)
+	LIBS := $(LIBS) $(CCASPEC_BABEL_F90LIBS) -lsidlstub_$(LANGUAGE)
+	CPPINCLUDES := $(INCLUDES) -I$(CCASPEC_BABEL_includedir)/f90 -I$(CCASPEC_BABEL_includedir)/F90 -I. 
+	F90INCLUDES := $(CCASPEC_BABEL_F90MFLAG)$(CCASPEC_BABEL_includedir)/f90 \
+		  $(CCASPEC_BABEL_F90MFLAG)$(CCASPEC_BABEL_includedir)/F90 \
+	$(CCASPEC_BABEL_F90MFLAG).
+	# To get the C files for the F90 binding compiled properly, we need:
+	INCLUDES := $(INCLUDES) -I$(CCASPEC_BABEL_includedir)/f90
+	F90SRC_FILES := $(TYPEMODULESRCS) $(ARRAYMODULESRCS) $(STUBMODULESRCS) 
+   DOBJS := $(DOBJS) $(F90SRC_FILES:.F90=.lo)
+endif
+
+ifeq ($(LANGUAGE),java)
+   JAVAC = $(CCASPEC_BABEL_JAVAC)
+   JAR = $(shell $(CCASPEC_BABEL_BABEL_CONFIG) --query-var=JAR)
+   JAVAINC = $(shell $(CCASPEC_BABEL_BABEL_CONFIG) --query-var=JNI_INCLUDES)
+   BABEL_CONFIG_VERSION = $(shell $(CCASPEC_BABEL_BABEL_CONFIG) --version)
+   INCLUDES := $(INCLUDES) $(JAVAINC) -I$(CCASPEC_BABEL_includedir)/java
+   LIBS := $(LIBS) -lsidlstub_$(LANGUAGE)
+   JAVASRCS = $(shell find . -name '*.java')
+   JAVA_CP= -classpath  $(CCASPEC_BABEL_libdir)/sidl-$(BABEL_CONFIG_VERSION).jar:$(CCASPEC_BABEL_libdir)/sidlstub_$(BABEL_CONFIG_VERSION).jar:.
+   JAVASRCS = $(shell find . -name '*.java')
+   CCASPEC_JARFILE = cca-spec.jar
+   CCASPEC_JARFILE_LONG = cca-spec$(VER_SUFFIX).jar
+endif
+
+ifeq ($(LANGUAGE),python)
+   PYTHON = $(CCASPEC_BABEL_PYTHON)
+	PYTHON_VER = python$(CCASPEC_BABEL_PYTHON_VERSION)
+endif
+
+# -g should not be in the suffix rules. o well.
+
+%.lo : %.c
+	@echo "$@"
+	$(HIDELIBTOOL)$(LIBTOOL) --mode=compile --tag=CXX $(QUIET_LIBTOOL) $(CC) $(LIBTOOL_COMPILEFLAGS) -g $(CFLAGS) $(INCLUDES) -I$(CCA_SPEC_CLIENTS)/c -c $< -o $(<:.c=.o)
+
+%.lo: %.cxx
+	@echo "$@"
+	$(HIDELIBTOOL)$(LIBTOOL) --mode=compile --tag=CXX $(QUIET_LIBTOOL) $(CXX) $(LIBTOOL_COMPILEFLAGS) -g $(CXXFLAGS) $(INCLUDES) -c $< -o $(<:.cxx=.o)
+
+%.lo: %.cc	
+	@echo "$@"
+	$(HIDELIBTOOL)$(LIBTOOL) --mode=compile --tag=CXX $(QUIET_LIBTOOL) $(CXX) $(LIBTOOL_COMPILEFLAGS) -g $(CXXFLAGS) $(INCLUDES) -c $< -o $(<:.cc=.o)
+
+%.lo: %.f	
+	@echo "$@"
+	$(HIDE_LIBTOOL)$(LIBTOOL) --mode=compile --tag=F77  $(QUIET_LIBTOOL) $(F77) $(CCASPEC_BABEL_FFLAGS) $(INCLUDES)  -c $< -o $(<:.f=.o)
+   
+%.lo: %.F90	
+	@echo "$@"
+	$(HIDE_LIBTOOL)$(CPP) -traditional-cpp -P -x c $(CPPINCLUDES) -o $(@:.lo=.tmp) $< 
+	@-sed -e 's/^#pragma.*$$//' < $(@:.lo=.tmp) > $(@:.lo=.f90)
+	$(HIDE_LIBTOOL)$(LIBTOOL) --mode=compile --tag=FC  $(QUIET_LIBTOOL) $(F90) $(F90FLAGS) $(F90INCLUDES)  -c $(<:.F90=.f90) -o $(<:.F90=.o)
+	rm -f $(<:.F90=.f90)
+
+all: lib
+
+lib: $(CLIENT_LIB_LONG)
+
+# this is probably going to be incorrect for some fortran
+# compiler. but then it was incorrect prior to libtool-izing
+# so libtool didn't make anything worse. babel libtool has at least
+# a --tag=F77 mode option if fortran is configured in.
+$(CLIENT_LIB_LONG): $(DOBJS) 
+	@if [ "$(LANGUAGE)" = "python" ] ; then \
+   	$(MAKE) .$(CLIENT_LIB_LONG)-python ;\
+   else \
+      if [ "$(LANGUAGE)" = "java" ] ; then \
+   		$(MAKE) .$(CLIENT_LIB_LONG)-java ;\
+      fi ;\
+		echo "assembling $@";\
+		$(LIBTOOL) --mode=link --tag=CXX $(QUIET_LIBTOOL) \
+      	$(CXX) $(LIBTOOL_LINKFLAGS) -rpath $(prefix)/lib $(INCLUDES) \
+         $(DOBJS) -o $@  $(LIBS);\
+		echo "assembling $(CLIENT_LIB)";\
+		$(LIBTOOL) --mode=link --tag=CXX $(QUIET_LIBTOOL) $(CXX)\
+       $(LIBTOOL_LINKFLAGS) -rpath $(prefix)/lib/$(PKG_NAME) $(INCLUDES) \
+       $(DOBJS) -o $(CLIENT_LIB) $(LIBS);\
+	fi
+   
+# this is bad but covers both babel versions.
+PYTHON_MODINC = $(CCASPEC_pkgincludedir)/$(PYTHON_VER)/babel:\
+$(CCASPEC_pkgincludedir)/c:$(CCASPEC_BABEL_includedir)/$(PYTHON_VER)/llnl_babel:\
+$(CCASPEC_BABEL_INCLUDES_PY):\
+$(CCASPEC_BABEL_includedir)/$(PYTHON_VER)/babel:\
+$(CCASPEC_BABEL_includedir):$(CCASPEC_BABEL_PYTHONINC:-I%=%):.
+
+
+
+# Make sure no -I's exist in the list of include paths
+ALLPYTHON_MODINC = $(shell echo $(PYTHON_MODINC) | sed -e 's/-I//g' -e 's/ /:/g' -e s'/::*/:/g')
+
+.$(CLIENT_LIB_LONG)-python:
+	 $(HIDELIBTOOL)$(PYTHON) setup.py build_ext \
+        --include-dirs $(ALLPYTHON_MODINC) \
+        --library-dirs=$(CCASPEC_BABEL_libdir)\
+        --force;
+	 -touch $@
+
+.$(CLIENT_LIB_LONG)-java: 
+	$(HIDELIBTOOL)$(JAVAC) $(JAVA_CP) $(JAVASRCS); 
+	$(HIDELIBTOOL)$(JAR) -cf $(CCASPEC_JARFILE) `find . -name '*.class'`;
+	$(HIDELIBTOOL)$(JAR) -cf $(CCASPEC_JARFILE_LONG) `find . -name '*.class'`;
+	-touch $@
+
+install: $(CLIENT_LIB_LONG) 
+	@if [ "$(LANGUAGE)" = "python" ]; then  \
+		$(PYTHON) setup.py install_headers \
+			--install-dir=$(DESTDIR)$(includedir)/$(PYTHON_VER)/babel \
+			--force; \
+		$(PYTHON) setup.py install_lib \
+			--install-dir=$(DESTDIR)$(libdir)/$(PYTHON_VER)/site-packages \
+			--library-dirs=$(CCASPEC_BABEL_libdir) \
+			--force; \
+		$(PYTHON) setup.py install_headers \
+			--install-dir=$(DESTDIR)$(pkgincludedir)/$(PYTHON_VER)/babel \
+			--force; \
+		$(PYTHON) setup.py install_lib \
+			--install-dir=$(DESTDIR)$(pkglibdir)/$(PYTHON_VER)/site-packages \
+			--force; \
+		cp *.h  $(DESTDIR)$(pkgincludedir)/$(PYTHON_VER) > /dev/null 2>&1; \
+	else \
+		cp *.h  $(DESTDIR)$(includedir)/$(LANGUAGE) > /dev/null 2>&1; \
+		cp *.h  $(DESTDIR)$(pkgincludedir)/$(LANGUAGE) > /dev/null 2>&1; \
+	   $(LIBTOOL) --mode=install cp $(CLIENT_LIB_LONG) $(DESTDIR)$(prefix)/lib;\
+	   $(LIBTOOL) --mode=finish $(DESTDIR)$(prefix)/lib;\
+	   $(LIBTOOL) --mode=install cp $(CLIENT_LIB) $(DESTDIR)$(prefix)/lib/$(PKG_NAME);\
+	   $(LIBTOOL) --mode=finish $(DESTDIR)$(prefix)/lib/$(PKG_NAME);\
+	   echo libtool libraries installed.;\
+	fi;
+	@if [ "$(LANGUAGE)" = "ucxx" ]; then \
+		cp -f *.hxx  $(DESTDIR)$(includedir)/$(LANGUAGE) > /dev/null 2>&1; \
+		cp -f *.hxx  $(DESTDIR)$(pkgincludedir)/$(LANGUAGE) > /dev/null 2>&1; \
+	fi  
+	@if [ "$(LANGUAGE)" = "dcxx" ]; then \
+		cp -f *.hh  $(DESTDIR)$(includedir)/$(LANGUAGE) > /dev/null 2>&1; \
+		cp -f *.hh  $(DESTDIR)$(pkgincludedir)/$(LANGUAGE) > /dev/null 2>&1; \
+	fi  
+	@if [ "$(LANGUAGE)" = "cxx" ]; then \
+		files=`ls -1 *.hxx *.hh` ; \
+		cp -f $$files $(DESTDIR)$(includedir)/$(LANGUAGE) > /dev/null 2>&1; \
+		cp -f $$files $(DESTDIR)$(pkgincludedir)/$(LANGUAGE) > /dev/null 2>&1; \
+	fi  
+	@if [ "$(LANGUAGE)" = "f90" ]; then \
+		cp -f *.mod $(DESTDIR)$(includedir)/$(LANGUAGE) > /dev/null 2>&1;\
+		cp -f *.mod $(DESTDIR)$(pkgincludedir)/$(LANGUAGE) > /dev/null 2>&1; \
+	fi;   
+	@if [ "$(LANGUAGE)" = "f77" ]; then \
+		cp -f *.inc $(DESTDIR)$(includedir)/$(LANGUAGE) > /dev/null 2>&1; \
+		cp -f *.inc $(DESTDIR)$(pkgincludedir)/$(LANGUAGE) > /dev/null 2>&1; \
+	fi;   
+	@-if [ "$(LANGUAGE)" = "java" ]; then \
+		$(LIBTOOL) --mode=install cp $(CCASPEC_JARFILE_LONG) $(DESTDIR)$(prefix)/lib/$(PKG_NAME);\
+		$(LIBTOOL) --mode=install cp $(CCASPEC_JARFILE) $(DESTDIR)$(prefix)/lib;\
+	fi;
+   
+clean:
+	-$(LIBTOOL) --mode=clean $(RM) *.la *.o *.lo .$(CLIENT_LIB_LONG)*

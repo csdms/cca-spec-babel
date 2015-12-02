@@ -1,0 +1,5 @@
+This is a file to keep the utils/doc directory from being empty,
+since the "cvs update -P" in CruiseControl will it prune away,
+and it is needed for the build...
+
+Frickin' Duh...  :-b

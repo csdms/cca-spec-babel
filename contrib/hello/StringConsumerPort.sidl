@@ -1,0 +1,13 @@
+/** This packaged port is the ur-example for CCA's uses-provides model.
+It is much referenced in testing but of no practical application value.
+*/
+package hello version 0.0 {
+    
+  /** There is a much tested interface in the development of the
+	cca standard but isn't part of the standard.  */
+  interface StringConsumerPort extends gov.cca.Port {
+    /** Receive a string from another component.   */
+    void setString(in string s);
+  }
+
+}

@@ -1,0 +1,156 @@
+/** GENERAL NOTES on MPI handles and SIDL:
+*
+* As MPI Forum explicitly DOES NOT define an interlanguage
+* form for object (comm, group, etc) handles, we use the
+* FORTRAN form which, being an integer of some size <= long
+* in sidl, we will express in SIDL as a long.
+*
+* Implementations in C/C++/Python will have to use appropriate
+* conversion operators, MPI_Comm_c2f/MPI_Comm_f2c, when
+* passing/receiving object handles in long form.
+*
+* The MPI standard does not include an automatic reference counting
+* model for its handles.
+*
+* There is a general move afoot (unclear whether it will be mpi-3 or 2.x)
+* to make the C definition more generically OO wrapping friendly, and
+* in particular Java, swig, and similar. 
+*/
+package gov {
+package cca  version 0.8.5 {
+package ports {
+
+    interface MPIServer extends gov.cca.Port {
+
+	/** Check instance status. Only one init* call per instance is allowed.
+	@return true if initAsService or initComponent already done.
+	 */
+	bool isInitialized();
+
+        ////////
+        // This method is for treating an instance from an external driver
+	// to set up a general service instance global to a frame.
+        // Useful in at least the static linking case.
+        ////////
+        /** Create and add to the framework MPIService and MPIBorrow
+         * support services. This will appear in the frame as an
+         * MPISetup component. MPI_Init must have been called before
+         * this is called.
+         * This entry point should work for any cca framework bootstrapping
+         * in commworld or otherwise scoped communicator via the standard
+         * ServiceRegistry interface. This will not automatically
+         * cause the component class providing this interface to appear in the
+         * list of classes the user may instantiate.
+         * The borrowComm and dupComm may be identical.
+	 * In the MPI sense, this call must be collective on the scopes of both
+         * borrowComm and dupComm.
+         *
+         * @param borrowComm  the (valid) shared communicator 
+         *   for those using MPIBorrow (in fortran form).
+         * @param dupComm  the (valid) communicator (in fortran form) to duplicate 
+         *   for those using MPIService.
+         * @param af The frame into which the server will add itself.
+         * In principle, the caller should be able to forget about the class object
+         * they are holding to make this call.
+         */
+        void initAsService(in long borrowComm, in long dupComm, inout gov.cca.AbstractFramework af) throws gov.cca.CCAException;
+
+        ////////
+        // This method is for treating an instance from inside a frame or
+	// subframe as a peer component that may serve only certain other
+	// components in the frame, e.g after a comm split.
+        ////////
+        /** Set the communicators on an uninitialized mpi support component
+         * instance created like any other.
+         * This does NOT cause the component being initialized to register itself
+	 * as a service for all comers.
+         *
+         * The borrowComm and dupComm may be identical.
+	 * In the MPI sense, this call must be collective on the scopes of both
+         * borrowComm and dupComm.
+         *
+         * @param borrowComm  the (valid) shared communicator 
+         *   for those using MPIBorrow (in fortran form).
+         * @param dupComm  the (valid) communicator (in fortran form) to duplicate 
+         *   for those using MPIService.
+         * @param af The frame into which the server will add itself.
+         * In principle, the caller should be able to forget about the class object
+         * they are holding to make this call.
+         */
+        void initComponent(in long borrowComm, in long dupComm);
+
+        /**
+         * Shutdown the previous mpi-related services.
+         * @param reclaim if reclaim true, try to release communicator
+         * resources allocated in MPIService support.
+         * Otherwise, lose them.
+         */
+        void finalize(in bool reclaim) throws gov.cca.CCAException;
+    }
+
+    interface MPIBorrow extends gov.cca.Port
+    {
+
+      /** Get a communicator of the port provider (in FORTRAN form).
+       * This communicator will be the same instance as the comm of the
+       * port provider, with all the message collision potential that implies.
+       * For all but perhaps debugging purposes, this call must be made
+       * collectively.
+       * The use of a tagList is optional (tagsRequested can be 0),
+       * in which case no guarantees can be provided about tag conflicts.
+       *
+       * @param tagCount: The number of tags the borrower wishes to use
+       *                all to itself.
+       * @param tagList: Array to be filled with tags available. The
+       *               array given as input must be at least tagCount long.
+       *               The values of the tags returned are arbitrary, so if
+       *               the user wishes the value of a tag to encode additional
+       *               information, this port is not for that user.
+       *           
+       * @param key: key to be returned when the tags and comm are done with.
+       * @return The comm being borrowed, in FORTRAN form. C callers use comm_f2c
+       *       method defined by their mpi implementation, usually MPI_Comm_f2c,
+       *       to convert result to MPI_Comm.
+       * @throw CCAException if the service cannot be implemented because MPI is
+       *      not present.
+       */
+      long borrowComm(in int tagsRequested, inout array<int> tagList, inout int key) throws gov.cca.CCAException;
+
+      /** Return a previously borrowed communicator and tag list.
+       * For all but perhaps debugging purposes, this call must be made
+       * collectively.
+       *  @param tagCount: The length of tagList.
+       *  @param tagList: The tags being returned, at least tagCount long.
+       *  @param key: The key obtained with borrowComm. It is
+       *         an error to attempt to return tags that you didn't receive.
+       *  @throw CCAException if an error is detected.
+       */
+      void returnComm(in long comm, in int tagsRequested, inout array<int> tagList, in int key) throws gov.cca.CCAException;
+
+    }
+
+    interface MPIService extends gov.cca.Port {
+
+      /** Get an mpi communicator with the same scope as the component instance.
+       Won't be mpi_comm_null. The communicator returned will be
+       private to the recipient, which implies an mpicommdup by the provider.
+       Call must be made collectively.
+       @return The comm produced, in FORTRAN form. C callers use comm_f2c
+               method defined by their mpi implementation, usually MPI_Comm_f2c,
+               to convert result to MPI_Comm.
+       @throw CCAException if the service cannot be implemented because MPI is
+              not present.
+       */
+      long getComm() throws gov.cca.CCAException;
+
+      /** Let go the communicator. previously fetched with getComm.
+       * Call must be made collectively.
+       *  @throw CCAException if an error is detected.
+       */
+      void releaseComm(in long comm) throws gov.cca.CCAException;
+
+    } // end MPIService
+
+} // end pkg ports
+} // end pkg cca
+} // end pkg gov

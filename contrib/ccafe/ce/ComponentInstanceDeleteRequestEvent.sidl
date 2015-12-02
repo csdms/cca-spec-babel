@@ -1,0 +1,58 @@
+package ccaffeine version 0.3 {
+package ce {
+
+/** 
+   Advise others that a component is going away soon.
+*/
+interface ComponentInstanceDeleteRequestEvent  extends ContextEvent
+{
+
+
+  /** Returns the integer standard type for the event. If the
+      event is not one of the standard types, then this returns
+      ContextEventType.NONE. 
+      For ComponentInstanceDeleteRequestEvent, the type is
+      ComponentDeletePending.
+   */
+   ContextEventType getContextEventType() ; 
+
+  /** 
+    Fetch the component generating the event.
+    @returns the componentID of the component generating the event,
+     or null if the container itself generated the event.
+   */
+   gov.cca.ComponentID getContextEventSourceID() ; 
+
+  /** Within a source component, there may be more than one emitter. Key
+      is the self-proclaimed serial number of the emitter, unique
+      within the scope of the result from getSourceID.
+   */
+   int getContextEventSourceKey() ; 
+
+  /** For each source:key pair events are emitted in a monotonically
+      increasing sequence. It is hoped 64 bits is enough to handle
+      long runs.
+   */
+   long getContextEventSequenceNumber() ; 
+
+  /** Annotated, stringified event information.
+      @return an arbitrary string.
+   */
+   string getContextEventDescription() ;
+
+  /** Set or amend the description, as determined by the implementation.
+   */
+   void setContextEventDescription(in string description) ;
+
+  /////// ComponentInstanceDeleteRequestEvent specific functions
+  /** @return class name of component instance to be deleted. */
+   string getComponentClassName() ; /* throw? */
+
+  /** @return id of component instance to be deleted. */
+   gov.cca.ComponentID getComponentID() ; /* throw? */
+  
+}  // end interface ComponentInstanceDeleteRequestEvent
+
+} // end package ce
+} // end package ccaffeine
+

@@ -1,0 +1,9 @@
+# replace other xml thing with ccaxml2.
+# add chained sidl deps.
+# add chained libraries.
+# add chained includes
+fix bocca to generate xml files.
+make.server
+make.client
+builder plugin for BASES and REQUIRES
+make bocca import external depl.xml info correctly and use.

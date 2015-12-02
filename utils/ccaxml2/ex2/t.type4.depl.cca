@@ -1,0 +1,66 @@
+<?xml version="1.0" ?>
+<libInfo>
+    <!-- # generated index. -->
+    <!--  -->
+    <interfaceDeployment name="t.type4" paletteAlias="t.type4" uniqueID="fixmeuuid">
+        <sidlBaseSymbols>
+            gov.cca.Port
+        </sidlBaseSymbols>
+        <sidlOtherSymbols>
+            t.ptype
+        </sidlOtherSymbols>
+        <client_c>
+            <include>
+                /home/baallan/work/sc04/install/ccafe10/include
+            </include>
+            <libtool>
+                /home/baallan/work/sc04/install/ccafe10/libt.type4-c.la
+            </libtool>
+            <static>
+                /home/baallan/work/sc04/install/ccafe10/libt.type4-c.a
+            </static>
+            <shared>
+                /home/baallan/work/sc04/install/ccafe10/libt.type4-c.so
+            </shared>
+        </client_c>
+        <client_cxx>
+            <include>
+                /home/baallan/work/sc04/install/ccafe10/include
+            </include>
+            <libtool>
+                /home/baallan/work/sc04/install/ccafe10/libt.type4-cxx.la
+            </libtool>
+            <static>
+                /home/baallan/work/sc04/install/ccafe10/libt.type4-cxx.a
+            </static>
+            <shared>
+                /home/baallan/work/sc04/install/ccafe10/libt.type4-cxx.so
+            </shared>
+        </client_cxx>
+        <client_f77 unsupported="true"/>
+        <client_f90>
+            <include>
+                /home/baallan/work/sc04/install/ccafe10/include
+            </include>
+            <libtool>
+                /home/baallan/work/sc04/install/ccafe10/libt.type4-f90.la
+            </libtool>
+            <static>
+                /home/baallan/work/sc04/install/ccafe10/libt.type4-f90.a
+            </static>
+            <shared>
+                /home/baallan/work/sc04/install/ccafe10/libt.type4-f90.so
+            </shared>
+        </client_f90>
+        <client_java>
+            <classpath>
+                /home/baallan/work/sc04/install/ccafe10/java
+            </classpath>
+        </client_java>
+        <client_python>
+            <pythonpath>
+                /home/baallan/work/sc04/install/ccafe10/python2.5/site-packages
+            </pythonpath>
+        </client_python>
+    </interfaceDeployment>
+</libInfo>

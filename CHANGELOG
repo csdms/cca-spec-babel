@@ -1,0 +1,89 @@
+10/11/2008 norris@mcs.anl.gov
+Updated to autoconf 2.62 and automake 1.10.
+Fixed babel version checks for nightly tarballs of Babel
+and corresponding Java client build details.
+Bumped version to 0.8.6.
+
+9/19/2006 baallan@ca.sandia.gov
+0.8.1: Added contrib build support start. --disable-contrib to avoid
+building contrib and to eliminate ccaffeine support.
+Reduced server/ build to only stuff that's actually classes;
+prior to this, server just duplicated client/cxx.
+Added primitive pmake support in client build. need to
+rationalize this with a config switch uniformly in spec, ccaffeine
+that can then be passed to tools config line. 
+setenv CCA_PMAKE "-j 2" for example.
+
+8/31/2006 baallan@ca.sandia.gov
+Added vpath build support. Now --srcdir allows to build in a separate
+object tree. Babel off the 1.0.0 svn branch or later is needed to
+build this; long names break bugs in the backends of 1.0.0 release.
+
+4/3/2006 baallan@ca.sandia.gov
+Moving to 0.8 with ucxx,dcxx build incompatibility
+
+11/7/2005 baallan@ca.sandia.gov
+Moving to version 0.7.10 which should be more python2.4 compliant
+as the None enum value has gone away replaced with NoType.
+Users of TypeMaps may care.
+
+03/26/05 norris@mcs.anl.gov
+* Small adjustments to Makefile.in, utils/Makefile_template.client.in
+to remove the generation of an ior library since no _IOR.c files 
+are generated for the current cca.sidl. On some architectures,
+trying to create a library without any *.o's is a fatal error.
+
+12/15/04 baallan@ca.sandia.gov
+* Added babel-libtool usage.
+Bumped patch level to 5 so that configure tools can check version to
+insist on a spec with libtool support.
+
+11/29/04 baallan@ca.sandia.gov
+* removed gov_cca_CCAException_Impl and friends, as the spec is now all
+interfaces. Added code generation script for ccaffeine commandline
+to c++ builderservice.
+
+10/16/04 norris@mcs.anl.gov
+* Added automatic generation of clients for all Babel-supported languages
+(still need to add most respective vars to MakeIncl and config.h)
+
+8/10/04 norris@mcs.anl.gov
+* Added variables for F90 settings to MakeIncl, obtained with babel-config
+* Added src/genSCLCCA.sh to list of install files
+
+7/31/04 baallan@ca.sandia.gov
+* Patch for unified cca/scl xml generation.
+
+# --------------------------
+6/10/04 baallan@ca.sandia.gov
+* Patch for darwin support in configure.
+
+# --------------------------
+5/06/04 baallan@ca.sandia.gov
+* Updated to babel 0.9.2.
+* Eliminated config support of prior incompatible babels.
+* Added ServiceRegistry/ServiceProvider from recent vote.
+* Added component .cca XML generation script, genSCLCCA.sh.
+  This generator makes xml files:
+  The .scl block required by babel.
+  The component metadata block required by ccaffeine.
+  Currently doesn't provide xml port data, pending more features requested from babel.
+  Currently doesn't combine all xmls into a single file, as babel parser only
+  supports a pure scl file.
+
+# --------------------------
+3/27/03 baallan@ca.sandia.gov
+* The canonical build process is now "configure;make;make install".
+  If no --prefix is specified, installation will be into the
+  local build tree. "make install" is NOT optional.
+  --with-babel=/somewhere is in most cases needed for configure.
+* Added bin/cca-spec-babel-config-$sver-$bver, test-babel-config-$bver.
+* cca.sidl is now generated at configure time, to cope with
+  incompatible changes in the babel tool. 
+* Future edits should be made to cca.sidl.in.
+* CCA specification version number is defined in configure.in.
+  Acsite.m4 must be updated to deal with later
+  babel releases which are to be supported.
+* Added installation logic to install multiple versions
+  of the specifications and/or babel at once.
+# --------------------------

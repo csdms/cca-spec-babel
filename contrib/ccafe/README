@@ -1,0 +1,13 @@
+This directory includes a set of ports and a subdirectory
+of event-related types (for framing-related (contextevent) events) that
+may be of general use to any framework.
+
+It also contains a static string lookup class Keys whose
+implementation only exists in ccaffeine.
+
+All this lives in the namespaces:
+ccaffeine,
+ccaffeine.ports,
+ccaffeine.ce
+
+Defining similar interfaces in the cca specification is welcome but unlikely. 

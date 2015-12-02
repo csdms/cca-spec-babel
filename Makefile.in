@@ -1,0 +1,478 @@
+
+#=====================================
+@SET_MAKE@
+
+SHELL = @SHELL@
+
+PKG_NAME=@CCASPEC_PKG_NAME@
+PROGRAM_SUFFIX=@PROGRAM_SUFFIX@
+VER_SUFFIX=@CCASPEC_VER_SUFFIX@
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+# VPATH = @srcdir@
+#
+# DESTDIR is a gnu standard define that is a destination root for prefix &c.
+#
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
+bindir = @bindir@
+sbindir = @sbindir@
+libexecdir = @libexecdir@
+datarootdir = @datarootdir@
+datadir = @datadir@
+docdir = @datadir@/doc
+sysconfdir = @sysconfdir@
+sharedstatedir = @sharedstatedir@
+localstatedir = @localstatedir@
+libdir = @libdir@
+infodir = @infodir@
+mandir = @mandir@
+includedir = @includedir@
+oldincludedir = /usr/include
+pkgdatadir = @pkgdatadir@
+pkgdocdir = @pkgdocdir@
+pkglibdir = @pkglibdir@
+pkgincludedir = @pkgincludedir@
+ENABLE_CONTRIB=@ENABLE_CONTRIB@
+ENABLE_MPI=@ENABLE_MPI@
+HAVE_TCLSH=@HAVE_TCLSH@
+transform=@program_transform_name@
+# top_builddir = .
+top_builddir = $(shell pwd)
+
+
+#=====================================
+
+CCASPEC_BABEL_XML_REPOSITORY=@CCASPEC_BABEL_XML_REPOSITORY@
+CCASPEC_BABEL_HEADERS=@CCASPEC_BABEL_HEADERS@
+CCASPEC_BABEL_LIBS=@CCASPEC_BABEL_LIBS@
+CCASPEC_VERSION=@CCASPEC_VERSION@
+CCASPEC_VERSION_MAJOR=@CCASPEC_VERSION_MAJOR@
+CCASPEC_VERSION_MINOR=@CCASPEC_VERSION_MINOR@
+CCASPEC_VERSION_PATCH=@CCASPEC_VERSION_PATCH@
+CCASPEC_VERSION_RELEASE=@CCASPEC_VERSION_RELEASE@
+HIDECOMPILE=@HIDECOMPILE@
+HIDELIBTOOL=@HIDELIBTOOL@
+
+# These are the config variables
+# we need to recycle from babel's main
+# CONFIG_INSTALL_NOTES.
+CCASPEC_BABEL_ROOT=@CCASPEC_BABEL_ROOT@
+CCASPEC_BABEL_VERSION=@CCASPEC_BABEL_VERSION@
+CCASPEC_BABEL_CC=@CCASPEC_BABEL_CC@
+CCASPEC_BABEL_CFLAGS=@CCASPEC_BABEL_CFLAGS@
+CCASPEC_BABEL_CXX=@CCASPEC_BABEL_CXX@
+CCASPEC_BABEL_CXXLIBS=@CCASPEC_BABEL_CXXLIBS@
+CCASPEC_BABEL_CXXFLAGS=@CCASPEC_BABEL_CXXFLAGS@
+CCASPEC_BABEL_F77=@CCASPEC_BABEL_F77@
+CCASPEC_BABEL_JAVA=@CCASPEC_BABEL_JAVA@
+CCASPEC_BABEL_JAVAC=@CCASPEC_BABEL_JAVAC@
+CCASPEC_BABEL_JAVAH=@CCASPEC_BABEL_JAVAH@
+CCASPEC_BABEL_JAR=@CCASPEC_BABEL_JAR@
+CCASPEC_BABEL_PYTHON=@CCASPEC_BABEL_PYTHON@
+CCASPEC_BABEL_PYTHON_VERSION=@CCASPEC_BABEL_PYTHON_VERSION@
+CCASPEC_BABEL_PYTHONINC=@CCASPEC_BABEL_PYTHONINC@
+CCASPEC_BABEL_PYTHONLIB=@CCASPEC_BABEL_PYTHONLIB@
+LIBTOOL=@CCASPEC_BABEL_BABEL_LIBTOOL@
+LIBTOOL_COMPILEFLAGS=@LIBTOOL_COMPILEFLAGS@
+LIBTOOL_LINKFLAGS=@LIBTOOL_LINKFLAGS@
+LIBTOOL_FINISHFLAGS=@LIBTOOL_FINISHFLAGS@
+VERSION=$(CCASPEC_VERSION)
+
+BABEL_HOME = $(CCASPEC_BABEL_ROOT)
+BABEL_includedir=@BABEL_includedir@
+BABEL_bindir=@BABEL_bindir@
+BABEL_libdir=@BABEL_libdir@
+JAVA_ROOT = @JAVA_HM@
+CXX=@CCASPEC_BABEL_CXX@
+BABEL_LANGUAGES = @BABEL_LANGUAGES@
+SERVER_LANG=@SERVER_LANG@
+BABEL_EXCLUDE=@BABEL_EXCLUDE@
+
+BABEL = PATH=$(BABEL_bindir):$(JAVA_ROOT)/bin:$$PATH @BABEL_program@
+
+# build-py or build-no-py
+BUILD_PYTHON=@BUILD_PYTHON@
+CCASPEC_BUILD_PY = @CCASPEC_BUILD_PY@
+
+BUILD_PY = gen-babel-$(BUILD_PYTHON)
+INSTALL_PY = install-babel-$(BUILD_PYTHON)
+
+DIRS = server
+ifneq "1" "@ENABLE_MPI@"
+CCA_SIDL = $(srcdir)/cca.sidl 
+else
+CCA_SIDL = cca.sidl 
+endif
+
+SIDL_FILES=$(CCA_SIDL)
+
+ifeq "1" "@ENABLE_CONTRIB@"
+SIDL_FILES += $(shell ls $(srcdir)/contrib/hello/*.sidl $(srcdir)/contrib/ccafe/*.sidl $(srcdir)/contrib/ccafe/ce/*.sidl)
+SIDL_CLASSES_C += $(srcdir)/contrib/ccafe/Keys.sidl
+endif
+
+IMPLNEWR = $(srcdir)/bin/newer.sh
+
+
+INSTALL_ROOT=$(DESTDIR)@INSTALL_PREFIX@
+CCASPEC_BUILD_DIR=@CCASPEC_BUILD_DIR@
+INSTALL=@INSTALL@
+INSTALL_DATA=@INSTALL_DATA@
+LN_S=@LN_S@
+CFLAGS=@CFLAGS@
+CXXFLAGS=@CXXFLAGS@
+
+
+INSTALL_FILES= \
+$(CCA_SIDL) \
+src/CCA_Babel_Vars.sh \
+src/MakeIncl_CCA_Babel_Vars \
+src/genSCLCCA.sh
+
+INSTALL_BINS= \
+cca-spec-babel-scanCCAxml.exe \
+test-babel-config \
+genSCLCCA.sh \
+cca-spec-babel-config
+
+ifeq "$(HAVE_TCLSH)" "1"
+INSTALL_BINS += \
+bld2babel-cpp.tcl \
+bld2babel-cpp 
+endif
+
+SIDL_LIB_DIR = $(BABEL_libdir)
+
+SERVER_DIR = ./server
+
+BABEL_INCLUDE = -I$(BABEL_includedir)
+
+CXXFLAGS = $(CCASPEC_BABEL_CXXFLAGS) -g $(BABEL_INCLUDE) $(CCASPEC_INCLUDE)
+XMLFLAGS=@CCA_BABEL_XMLFLAGS@
+
+COPY_FILES = babel_compat.hh $(srcdir)/AllCCA.hh Makefile.babel
+src_FILES = Makefile bld2babel-cpp.tcl
+src_treeReader_FILES=Makefile Makefile.depends
+
+all: .dirs-made .gen-babel .uncruft .make-babel .gen-clients bins
+
+%.o : %.cc
+	$(HIDELIBTOOL)$(LIBTOOL) --mode=compile $(HIDECOMPILE) \
+		$(CXX) $(LIBTOOL_COMPILEFLAGS) -c $(CXXFLAGS) $<
+
+reconf:
+	chmod a+x reconfigure
+
+$(DIRS) .dirs-made : reconf
+	@if ! test -d server ; then \
+		mkdir server ; \
+	fi
+	@if ! test -f cca.sidl; then \
+		cp $(srcdir)/cca.sidl . ; \
+	fi
+	@if test "x$(ENABLE_MPI)" = "x1" ; then \
+		if ! grep MPIService cca.sidl ; then \
+			echo "merging mpi into spec"; \
+			cat $(srcdir)/mpi/gov.cca.ports.mpi.sidl >> cca.sidl ; \
+		fi \
+	fi
+	@if ! test -d client ; then \
+		mkdir client  ; \
+	fi
+	@if ! test -d src ; then \
+		mkdir src  ; \
+	fi
+	@if ! test -d src/treeReader ; then \
+		mkdir src/treeReader  ; \
+	fi
+	touch .dirs-made
+
+babel-copy .babel-copy : $(COPY_FILES) .dirs-made
+	-@for i in $(src_FILES); do \
+		cp $(srcdir)/src/$$i src; \
+	done
+	-@for i in $(src_treeReader_FILES); do \
+		cp $(srcdir)/src/treeReader/$$i src/treeReader; \
+	done
+	@if [ -n "$(COPY_FILES)" ]; then \
+		list=`$(IMPLNEWR) $(COPY_FILES) server`; \
+		echo "Copying $$list to server/"; \
+		for i in $$list /dev/null ; do \
+endif
+
+SIDL_LIB_DIR = $(BABEL_libdir)
+
+SERVER_DIR = ./server
+
+BABEL_INCLUDE = -I$(BABEL_includedir)
+
+CXXFLAGS = $(CCASPEC_BABEL_CXXFLAGS) -g $(BABEL_INCLUDE) $(CCASPEC_INCLUDE)
+XMLFLAGS=@CCA_BABEL_XMLFLAGS@
+
+COPY_FILES = babel_compat.hh $(srcdir)/AllCCA.hh Makefile.babel
+src_FILES = Makefile bld2babel-cpp.tcl
+src_treeReader_FILES=Makefile Makefile.depends
+
+all: .dirs-made .gen-babel .uncruft .make-babel .gen-clients bins
+
+%.o : %.cc
+	$(HIDELIBTOOL)$(LIBTOOL) --mode=compile $(HIDECOMPILE) \
+		$(CXX) $(LIBTOOL_COMPILEFLAGS) -c $(CXXFLAGS) $<
+
+reconf:
+	chmod a+x reconfigure
+
+$(DIRS) .dirs-made : reconf
+	@if ! test -d server ; then \
+		mkdir server ; \
+	fi
+	@if ! test -f cca.sidl; then \
+		cp $(srcdir)/cca.sidl . ; \
+	fi
+	@if test "x$(ENABLE_MPI)" = "x1" ; then \
+		if ! grep MPIService cca.sidl ; then \
+			echo "merging mpi into spec"; \
+			cat $(srcdir)/mpi/gov.cca.ports.mpi.sidl >> cca.sidl ; \
+		fi \
+	fi
+	@if ! test -d client ; then \
+		mkdir client  ; \
+	fi
+	@if ! test -d src ; then \
+		mkdir src  ; \
+	fi
+	@if ! test -d src/treeReader ; then \
+		mkdir src/treeReader  ; \
+	fi
+	touch .dirs-made
+
+babel-copy .babel-copy : $(COPY_FILES) .dirs-made
+	-@for i in $(src_FILES); do \
+		cp $(srcdir)/src/$$i src; \
+	done
+	-@for i in $(src_treeReader_FILES); do \
+		cp $(srcdir)/src/treeReader/$$i src/treeReader; \
+	done
+	@if [ -n "$(COPY_FILES)" ]; then \
+		list=`$(IMPLNEWR) $(COPY_FILES) server`; \
+		echo "Copying $$list to server/"; \
+		for i in $$list /dev/null ; do \
+			if test $$i != "/dev/null"; then \
+				cp -p $$i server/; \
+			fi; \
+		done; \
+	fi
+	touch .babel-copy
+
+gen-babel .gen-babel : .dirs-made .babel-copy
+	$(BABEL) $(XMLFLAGS) --output-directory=server $(SIDL_FILES)
+	$(MAKE) gen-contrib-$(ENABLE_CONTRIB)
+	touch .gen-babel
+
+gen-contrib-1:
+	$(BABEL) -s$(SERVER_LANG) $(BABEL_EXCLUDE) --output-directory=server --vpath=$(srcdir)/contrib/ccafe/c $(SIDL_CLASSES_C)
+
+gen-contrib-0:
+	@echo "Build of contrib directories disabled."
+	@echo "Don't use StringConsumerPort or Ccaffeine later."
+
+gen-clients .gen-clients :
+	@for LANGUAGE in $(BABEL_LANGUAGES); do \
+		echo -e "\n###\n### Building $$LANGUAGE client library.\n###"; \
+		$(BABEL) $(BABEL_EXCLUDE) -c $$LANGUAGE -o client/$$LANGUAGE $(SIDL_FILES); \
+		$(SH) $(top_srcdir)/utils/generateClientMakefile.sh $(top_builddir)/src/MakeIncl_CCA_Babel_Vars cca $(top_builddir)/client $(INSTALL_ROOT) $$LANGUAGE;\
+		$(MAKE) -C client/$$LANGUAGE $(CCA_PMAKE) lib ; \
+	done
+	touch .gen-clients
+
+make-babel .make-babel : .gen-babel .uncruft
+	@touch server/babel.make
+	(cd server;$(MAKE) -f Makefile.babel)
+	touch .make-babel
+
+.uncruft uncruft : .gen-babel
+	touch .uncruft
+
+bins:
+	@echo "Attempting to build optional utilities"
+	-(cd src; $(MAKE))
+	(cd utils; $(MAKE))
+
+# check the existence of the install root location
+$(INSTALL_ROOT):
+	@if test ! -d $(INSTALL_ROOT) ; then \
+		echo "Creating $(INSTALL_ROOT)"; \
+	else \
+		echo "Creating $(INSTALL_ROOT) already done."; \
+	fi
+	@-mkdir -p $(INSTALL_ROOT)
+	@if test ! -d $(INSTALL_ROOT) ; then \
+		echo "Unable to create $(INSTALL_ROOT)"; \
+		exit 1 ; \
+	fi
+	@if test ! -w $(INSTALL_ROOT) ; then \
+		echo "* * * You don't have permission to install in $(INSTALL_ROOT)" ; \
+		exit 1 ; \
+	fi
+
+# INSTALL_PY is gone. babel_languages loop takes care of it now.
+#install: $(INSTALL_ROOT) install-files $(INSTALL_PY)
+
+install: $(INSTALL_ROOT) install-files
+
+
+INSTALL_SUBDIRS= \
+$(DESTDIR)$(bindir) \
+$(DESTDIR)$(libdir) \
+$(DESTDIR)$(includedir) \
+$(DESTDIR)$(datadir) \
+$(DESTDIR)$(pkglibdir) \
+$(DESTDIR)$(pkgincludedir) \
+$(DESTDIR)$(pkgdatadir) \
+$(DESTDIR)$(pkgdatadir)/xml
+
+CCASPEC_LIBTOOL_LIB=@CCASPEC_LIBTOOL_LIB@
+CCASPEC_SHARED_LIB=@CCASPEC_SHARED_LIB@
+CCASPEC_STATIC_LIB=@CCASPEC_STATIC_LIB@
+BUILT_LIBTOOL_LIB=@BUILT_LIBTOOL_LIB@
+BUILT_SHARED_LIB=@BUILT_SHARED_LIB@
+BUILT_STATIC_LIB=@BUILT_STATIC_LIB@
+SHLIB_SUFFIX=@SHLIB_SUFFIX@
+
+install-subdirs:
+	@for i in $(INSTALL_SUBDIRS) /dev/null ; do \
+		if test $$i != "/dev/null" ; then \
+			if test ! -d $$i; then \
+				echo "Creating $$i"; \
+				mkdir -p $$i ; \
+				chmod 755 $$i; \
+			fi; \
+		fi ; \
+	done
+	@for LANGUAGE in $(BABEL_LANGUAGES); do \
+      if [ $$LANGUAGE != "python" ] ; then \
+         mkdir -p $(DESTDIR)$(includedir)/$$LANGUAGE;\
+         mkdir -p $(DESTDIR)$(pkgincludedir)/$$LANGUAGE;\
+         chmod 755 $(DESTDIR)$(includedir)/$$LANGUAGE $(DESTDIR)$(pkgincludedir)/$$LANGUAGE;\
+      fi;\
+   done;
+
+# Experienced an error when it tried to make install in client/python
+# this would seem to be a generic problem but does not occur on my Gentoo
+# box. -Rob
+install-libs:
+	@echo "Installing server libraries" 
+	$(HIDELIBTOOL)if test "$(ENABLE_CONTRIB)" = "1" ; then \
+	  $(LIBTOOL) --mode=install cp server/$(BUILT_LIBTOOL_LIB) $(DESTDIR)$(libdir)/$(CCASPEC_LIBTOOL_LIB); \
+	  $(LIBTOOL) --mode=finish $(LIBTOOL_FINISHFLAGS) $(DESTDIR)$(libdir); \
+	  $(LIBTOOL) --mode=install cp server/libcca.la $(DESTDIR)$(pkglibdir); \
+	  $(LIBTOOL) --mode=finish $(LIBTOOL_FINISHFLAGS) $(DESTDIR)$(pkglibdir); \
+	fi
+	@echo "Installing client libraries" ; \
+	for LANGUAGE in $(BABEL_LANGUAGES) ; do \
+		echo; \
+		echo ===== Installing $$LANGUAGE ======; \
+		echo; \
+		$(MAKE) -C client/$$LANGUAGE install;\
+	done 
+
+# we don't use this, but we may need it yet to sort out what
+# we're to do with gnu options --program-prefix, --program-suffix
+# which presently don't work quite as they should.
+install-liblinks:
+	p=`echo libcca|sed '$(transform)'`$(SHLIB_SUFFIX); \
+	if test -e $(DESTDIR)$(pkglibdir)/$$p ;  then \
+		rm -f $(DESTDIR)$(pkglibdir)/$$p;fi; \
+	echo "Creating sym-link $(DESTDIR)$(pkglibdir)/$${p}" ; \
+	. $(srcdir)/config/ccafe_pushd.sh; \
+	(pushd $(DESTDIR)$(pkglibdir); \
+	$(LN_S)  $(DESTDIR)$(libdir)/$(CCASPEC_LIBTOOL_LIB) $${p} ;popd)
+	p=`echo libcca|sed '$(transform)'`.a; \
+	if test -e $(DESTDIR)$(pkglibdir)/$$p ;  then \
+		rm -f $(DESTDIR)$(pkglibdir)/$$p;fi; \
+	echo "Creating sym-link $(DESTDIR)$(pkglibdir)/$${p}" ; \
+	(pushd $(DESTDIR)$(pkglibdir); \
+	$(LN_S)  $(DESTDIR)$(libdir)/$(CCASPEC_STATIC_LIB) $${p};popd)
+
+
+# This is part of install-libs now
+# Experienced an error when it tried to make install in client/python
+# this would seem to be a generic problem but does not occur on my Gentoo
+# box. -Rob
+install-clients:
+	@echo "Installing client libraries" ; \
+	for LANGUAGE in $(BABEL_LANGUAGES) ; do \
+		echo; \
+		echo ===== Installing $$LANGUAGE ======; \
+		echo; \
+		$(MAKE) -C client/$$LANGUAGE install; \
+	done 
+
+install-bins:
+	. $(srcdir)/config/ccafe_pushd.sh; \
+	for i in $(INSTALL_BINS) /dev/null ; do \
+		if test $$i != "/dev/null" -a -f src/$$i ; then \
+			p=`echo $${i}$(VER_SUFFIX)|sed '$(transform)'`; \
+			echo "Installing $$i"; \
+			$(INSTALL) src/$${i} $(DESTDIR)$(bindir)/$${p} ; \
+			if  test -x $(DESTDIR)$(bindir)/$$i ;  then \
+				rm -f $(DESTDIR)$(bindir)/$$i;fi; \
+			echo "Creating sym-link$ $(DESTDIR)$(bindir)/$${i}" ; \
+			(pushd $(DESTDIR)$(bindir); $(LN_S) $${p} $${i} ; popd) \
+		else \
+			if test $$i != "/dev/null" ; then \
+				echo "!Error: Cannot find $$i to install from src/."; \
+				exit 1; \
+			fi ; \
+		fi ; \
+	done
+
+install-utils:
+	(cd utils; $(MAKE) PREFIX=$(prefix) install)
+
+# install-clients is part of install libs. don't do twice.
+# install-files: install-subdirs install-libs install-clients install-bins
+install-files: install-subdirs install-libs install-bins install-utils
+	@(xlist=`ls -1 server/*xml`; \
+		for i in $$xlist /dev/null ; do \
+			if test $$i != "/dev/null" -a -f $$i ; then \
+				echo "Installing $$i"; \
+				$(INSTALL_DATA) $$i $(DESTDIR)$(pkgdatadir)/xml ; \
+			fi ; \
+		done)
+	@for i in $(INSTALL_FILES) /dev/null ; do \
+		if test $$i != "/dev/null" -a -f $$i ; then \
+			echo "Installing $$i"; \
+			$(INSTALL_DATA) $$i $(DESTDIR)$(pkgdatadir) ; \
+		fi ; \
+	done
+	@(flist=`ls -1 server/*h |grep -v Impl`; \
+		for i in $$flist /dev/null ; do \
+			if test $$i != "/dev/null" -a -f $$i ; then \
+				echo "Installing $$i"; \
+				$(INSTALL_DATA) $$i $(DESTDIR)$(pkgincludedir) ; \
+			fi ; \
+		done)
+
+clean: 
+	-rm -rf server *.o tester .dirs-made .gen-babel .make-babel
+	-$(MAKE) clean-clients
+	-if test -d src; then \
+		(cd src; $(MAKE) clean) ; \
+	fi
+
+clean-clients:
+	-for i in $(BABEL_LANGUAGES) ior; do rm -rf client/$$i ; done 
+	-rm -f .gen-clients
+
+depend: .gen-babel
+	(cd server;$(MAKE) -f Makefile.babel depend)
+
+configure: configure.in acsite.m4 config/*.m4
+	-$(RM) configure
+	autoconf configure.in | sed -e 's;# $$Header;# Source;' > configure
+	chmod a+x configure
+
+# $Header: /cvs/cca-spec/repository/cca-spec-babel/Makefile.in,v 1.56 2008/10/23 18:58:57 baallan Exp $

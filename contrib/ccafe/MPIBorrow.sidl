@@ -1,0 +1,57 @@
+
+package ccaffeine version 0.3 {
+
+  package ports { 
+
+    /** "ccafe.ports.MPIBorrow" :
+     * UNADOPTED-standard service for getting a shared communicator. 
+     * 
+     * As MPI Forum explicitly DOES NOT define an interlanguage
+     * form for object (comm, group, etc) handles, we use the
+     * FORTRAN form which, being an integer of some size <= long
+     * in sidl, we will express in SIDL as a long.
+     * Implementations in C/C++/Python will have to use appropriate
+     * conversion operators, MPI_Comm_c2f/MPI_Comm_f2c, when
+     * passing/receiving object handles in long form.
+     * They will also need to take care to convert from int64_t to
+     * int32_t if needed by their MPI implementation.
+     */
+    interface MPIBorrow extends gov.cca.Port
+    {
+
+      /** Get a communicator of the port provider (in FORTRAN form).
+       This communicator will be the same instance as the comm of the
+       port provider, with all the message collision potential that implies.
+       Instances which have a comm covering only a subset of themselves
+       will return FORTRAN MPI_COMM_NULL on their "un-covered" processes.
+
+       @param tagsRequested: The number of tags the borrower wishes to use
+    		    all to itself.
+       @param tagList: Array to be filled with tags available. The
+    		   array given as input is at least tagCount long and
+                   indexes from 0.
+       @param key: key to be returned when the tags and comm are done with.
+       @return The comm being borrowed, in FORTRAN form. C callers use comm_f2c
+    	   method defined by their mpi implementation, usually MPI_Comm_f2c,
+    	   to convert result to MPI_Comm.
+       @throw CCAException if the service cannot be implemented because MPI is
+    	  not present.
+      */
+      long borrowComm(in int tagsRequested, inout array<int> tagList, inout int key) throws gov.cca.CCAException;
+
+      /** Return a previously borrowed communicator and tag list.
+       *  @param comm fortran form of comm returned.
+       *  @param tagsRequested: The length of tagList.
+       *  @param tagList: The tags being returned, at least tagCount long.
+       *  @param key: The key obtained with borrowComm. It is
+       *         an error to attempt to return tags that you didn't receive.
+       *  @throw CCAException if an error is detected.
+       */
+      void returnComm(in long comm, in int tagsRequested, inout array<int> tagList, in int key) throws gov.cca.CCAException;
+    }
+
+  } // end subpackage ports
+
+} // end package ccaffeine
+
+

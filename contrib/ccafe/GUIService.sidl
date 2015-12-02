@@ -1,0 +1,42 @@
+
+package ccaffeine version 0.3 {
+
+  package ports { 
+
+    /** This interface allows a component to specify a
+	class-name and (potentially) arguments that get
+	passed out to a user-interface for further processing.
+	In past Ccaffeine demo's it has come handy for popping
+	up specialized input or output visualization windows.
+    */
+    interface GUIService extends gov.cca.Port {
+	/** send a string to the ccaffeine UI.
+	e.g. "gov.cca.anl.norris.UIMain arg1 arg2 arg3"
+        @param uicommand string routed to the ccaffeine ui.
+        if that ui happens to be the ccaffeine GUI (or another one
+	supporting this interface, a load
+        event is generated that is handled by ./user_iface/gui/guicmd/Gui.java
+        (or equivalent) in the following way:
+        - uicommand is broken up into words.
+        - the first word is a java classname.
+	- An instance of the classname is created (null constructor).
+	- If widget is a CcaffeineGUIWidget 
+		(see user_iface/gui/CcaffeineGUIWidget.java)
+	  the rest of the words are delivered as a String[].
+	- If widget is a Runnable, gui starts it in a new thread.
+	- If widget is a javax.swing.JInternalFrame,JApplet,JFrame,
+	then it gets added to ccaffeine gui hierarchy.
+	- Additional mechanisms for delivering arg1 arg2 arg3
+	may be specified by new implementations of this interface.
+	- In the above steps, anything exceptional just gets ignored.
+	- In the ccafe-gui implementation, if the classname is not a 
+	CcaffeineGUIWidget, the extra words in the uicommand are ignored.
+	*/
+	void load(in string uicommand);
+    }
+
+  } // end subpackage ports
+
+} // end package ccaffeine
+
+
