@@ -46,7 +46,7 @@ if ! test -d $DOUT; then
 	exit 1
 fi
 # full path of our executable
-GEN=$DESTDIR/$PREFIX/bin/genccaxml
+GEN="python $DESTDIR/$PREFIX/bin/genccaxml"
 # values for support of clients, linkage types
 . ../src/CCA_Babel_Vars.sh
 
