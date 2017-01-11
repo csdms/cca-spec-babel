@@ -83,7 +83,7 @@ CCASPEC_pkgdocdir=@pkgdocdir@
 CCASPEC_pkglibdir=@pkglibdir@
 CCASPEC_pkgincludedir=@pkgincludedir@
 CCASPEC_GENSCLCCA_SH=@bindir@/genSCLCCA.sh@CCASPEC_VER_SUFFIX@@PROGRAM_SUFFIX@
-CCASPEC_GENCCAXML='@bindir@/genccaxml'
+CCASPEC_GENCCAXML='@CCASPEC_BABEL_PYTHON@ @bindir@/genccaxml'
 
 CCASPEC_transform='@program_transform_name@'
 CCASPEC_CONFIG_ARGS='@CCASPEC_CONFIG_ARGS@'
